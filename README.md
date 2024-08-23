@@ -2,7 +2,7 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Getting Started
 
-[Demo](https://www.mindmapwithflash.vercel.app)
+## [Demo](https://mindmapwithflash.vercel.app/)
 
 First, run the development server:
 
