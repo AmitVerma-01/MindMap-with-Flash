@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 // DELETE a flashcard set
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth();
@@ -22,10 +22,12 @@ export async function DELETE(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    const { id } = await params;
+
     // Verify ownership
     const flashcardSet = await prisma.flashcardSet.findFirst({
       where: {
-        id: params.id,
+        id: id,
         userId: user.id,
       },
     });
@@ -38,7 +40,7 @@ export async function DELETE(
     }
 
     await prisma.flashcardSet.delete({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     return NextResponse.json({ success: true }, { status: 200 });
