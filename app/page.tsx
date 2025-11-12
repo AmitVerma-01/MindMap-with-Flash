@@ -7,12 +7,26 @@ import CTASection from "@/components/CTASection";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "AI-Powered Flashcard Generator - Study Smarter",
-  description: "Create AI-generated flashcards instantly from any topic. Master subjects faster with intelligent study tools. Free to start, no credit card required.",
+  title: "AI-Powered Flashcard Generator - Study Smarter | Free Online Tool",
+  description: "Create AI-generated flashcards instantly from any topic. Master subjects faster with intelligent study tools. Free to start, no credit card required. Perfect for students, teachers, and exam prep.",
+  keywords: [
+    "AI flashcard generator",
+    "free flashcard maker",
+    "online study cards",
+    "automatic flashcard creator",
+    "study tool online",
+    "exam preparation tool",
+    "learning flashcards",
+    "smart study app"
+  ],
   openGraph: {
-    title: "AI-Powered Flashcard Generator - Study Smarter",
-    description: "Create AI-generated flashcards instantly from any topic. Master subjects faster with intelligent study tools.",
+    title: "AI-Powered Flashcard Generator - Study Smarter | Free Online Tool",
+    description: "Create AI-generated flashcards instantly from any topic. Master subjects faster with intelligent study tools. Free to start, no credit card required.",
     images: ["/img.png"],
+    url: "https://mindmapwithflash.kodeeslabs.com",
+  },
+  alternates: {
+    canonical: "https://mindmapwithflash.kodeeslabs.com",
   },
 };
 
@@ -34,9 +48,9 @@ export default function Home() {
       <HeroSection />
 
       {/* Stats Section */}
-      <section className="w-full py-16 flex justify-center items-center">
+      <section className="w-full py-16 flex justify-center items-center" aria-label="Platform Statistics">
         <div className="w-11/12 max-w-6xl">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8" role="list">
             <div className="glass-card p-6 rounded-2xl text-center">
               <div className="text-4xl md:text-5xl font-bold text-[#CCFFFF] mb-2">10K+</div>
               <div className="text-gray-300 text-sm md:text-base">Flashcards Created</div>
@@ -58,13 +72,13 @@ export default function Home() {
       </section>
 
       {/* How It Works Section */}
-      <section className="w-full py-20 flex justify-center items-center">
+      <section className="w-full py-20 flex justify-center items-center" aria-labelledby="how-it-works-heading">
         <div className="w-11/12 max-w-6xl">
           <div className="text-center mb-16">
             <div className="inline-block glass-card px-6 py-2 rounded-full mb-6">
               <span className="text-sm font-bold text-[#CCFFFF] tracking-wider">⚡ HOW IT WORKS</span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 drop-shadow-lg">
+            <h2 id="how-it-works-heading" className="text-4xl md:text-5xl font-bold text-white mb-6 drop-shadow-lg">
               Create Flashcards in <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#2B74AB] to-[#CCFFFF]">3 Simple Steps</span>
             </h2>
           </div>
@@ -104,13 +118,13 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="w-full py-20 flex justify-center items-center">
+      <section className="w-full py-20 flex justify-center items-center" aria-labelledby="features-heading">
          <div className="w-11/12 md:w-4/5 flex flex-col gap-y-12">
             <div className="text-center">
                 <div className="inline-block glass-card px-6 py-2 rounded-full mb-6">
                   <span className="text-sm font-bold text-[#CCFFFF] tracking-wider">🚀 POWERFUL FEATURES</span>
                 </div>
-                <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 drop-shadow-lg">
+                <h2 id="features-heading" className="text-4xl md:text-5xl font-bold text-white mb-6 drop-shadow-lg">
                   Everything You Need to <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#2B74AB] to-[#CCFFFF]">Learn Better</span>
                 </h2>
                 <p className="text-gray-300 text-lg md:text-xl max-w-3xl mx-auto">
@@ -131,13 +145,13 @@ export default function Home() {
          </div>
       </section>
       {/* Pricing Preview Section */}
-      <section className="w-full py-20 flex justify-center items-center">
+      <section className="w-full py-20 flex justify-center items-center" aria-labelledby="pricing-heading">
         <div className="w-11/12 max-w-6xl">
           <div className="flex items-center flex-col gap-y-6 text-center mb-16">
             <div className="glass-card px-6 py-2 rounded-full">
               <span className="text-sm font-bold text-[#CCFFFF] tracking-wider">💎 SIMPLE PRICING</span>
             </div>
-            <h2 className="text-white text-4xl md:text-5xl font-bold drop-shadow-lg">
+            <h2 id="pricing-heading" className="text-white text-4xl md:text-5xl font-bold drop-shadow-lg">
               Start Free, <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#2B74AB] to-[#CCFFFF]">Upgrade Anytime</span>
             </h2>
             <p className="text-gray-300 text-lg md:text-xl max-w-2xl">
@@ -177,13 +191,13 @@ export default function Home() {
         </div>
       </section>
       {/* Testimonials Section */}
-      <section className="w-full py-20 flex justify-center items-center">
+      <section className="w-full py-20 flex justify-center items-center" aria-labelledby="testimonials-heading">
         <div className="w-11/12 max-w-6xl">
           <div className="text-center mb-16">
             <div className="inline-block glass-card px-6 py-2 rounded-full mb-6">
               <span className="text-sm font-bold text-[#CCFFFF] tracking-wider">💬 TESTIMONIALS</span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 drop-shadow-lg">
+            <h2 id="testimonials-heading" className="text-4xl md:text-5xl font-bold text-white mb-6 drop-shadow-lg">
               Loved by <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#2B74AB] to-[#CCFFFF]">Students</span> Worldwide
             </h2>
           </div>

@@ -10,40 +10,62 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
-    default: "MindMap with Flash - AI-Powered Flashcard Generator",
+    default: "MindMap with Flash - AI-Powered Flashcard Generator | Free Study Tool",
     template: "%s | MindMap with Flash"
   },
   description: "Transform any topic into interactive AI-powered flashcards in seconds. Study smarter, remember longer, and ace your exams with intelligent learning materials. Free to start!",
-  keywords: ["flashcards", "AI flashcards", "study tool", "learning app", "exam preparation", "spaced repetition", "AI learning", "study cards", "education technology"],
-  authors: [{ name: "MindMap with Flash" }],
+  keywords: [
+    "flashcards", 
+    "AI flashcards", 
+    "study tool", 
+    "learning app", 
+    "exam preparation", 
+    "spaced repetition", 
+    "AI learning", 
+    "study cards", 
+    "education technology",
+    "online flashcard maker",
+    "free flashcards",
+    "study app",
+    "memorization tool",
+    "test prep",
+    "student study tool",
+    "AI study assistant",
+    "smart flashcards",
+    "digital flashcards",
+    "exam study tool"
+  ],
+  authors: [{ name: "MindMap with Flash Team" }],
   creator: "MindMap with Flash",
   publisher: "MindMap with Flash",
-  metadataBase: new URL('https://mindmapwithflash.vercel.app'),
+  metadataBase: new URL('https://mindmapwithflash.kodeeslabs.com'),
   alternates: {
     canonical: '/',
   },
+  category: 'Education',
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://mindmapwithflash.vercel.app",
-    title: "MindMap with Flash - AI-Powered Flashcard Generator",
-    description: "Transform any topic into interactive AI-powered flashcards in seconds. Study smarter, remember longer, and ace your exams.",
+    url: "https://mindmapwithflash.kodeeslabs.com",
+    title: "MindMap with Flash - AI-Powered Flashcard Generator | Free Study Tool",
+    description: "Transform any topic into interactive AI-powered flashcards in seconds. Study smarter, remember longer, and ace your exams with intelligent learning materials.",
     siteName: "MindMap with Flash",
     images: [
       {
         url: "/img.png",
         width: 1200,
         height: 630,
-        alt: "MindMap with Flash - AI Flashcard Generator",
+        alt: "MindMap with Flash - AI-Powered Flashcard Generator for Students",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "MindMap with Flash - AI-Powered Flashcard Generator",
-    description: "Transform any topic into interactive AI-powered flashcards in seconds. Study smarter, remember longer.",
+    title: "MindMap with Flash - AI-Powered Flashcard Generator | Free Study Tool",
+    description: "Transform any topic into interactive AI-powered flashcards in seconds. Study smarter, remember longer, and ace your exams.",
     images: ["/img.png"],
     creator: "@mindmapflash",
+    site: "@mindmapflash",
   },
   robots: {
     index: true,
@@ -73,6 +95,8 @@ export default function RootLayout({
       <html lang="en">
         <head>
           <link rel="shortcut icon" href="logo2.png" type="image/x-icon" />
+          <link rel="canonical" href="https://mindmapwithflash.kodeeslabs.com" />
+          <meta name="theme-color" content="#2B74AB" />
           <StructuredData />
         </head>
         <body className={inter.className}>
