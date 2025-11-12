@@ -240,7 +240,7 @@ export default function Home() {
                 ))}
               </div>
               <p className="text-gray-300 mb-4">
-                "This app completely changed how I study. I went from struggling to acing my exams!"
+                &quot;This app completely changed how I study. I went from struggling to acing my exams!&quot;
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-gradient-to-r from-[#2B74AB] to-[#265973] rounded-full flex items-center justify-center">
@@ -262,7 +262,7 @@ export default function Home() {
                 ))}
               </div>
               <p className="text-gray-300 mb-4">
-                "The AI-generated flashcards are incredibly accurate. Saves me hours of manual work!"
+                &quot;The AI-generated flashcards are incredibly accurate. Saves me hours of manual work!&quot;
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-gradient-to-r from-[#2B74AB] to-[#265973] rounded-full flex items-center justify-center">
@@ -284,7 +284,7 @@ export default function Home() {
                 ))}
               </div>
               <p className="text-gray-300 mb-4">
-                "Best study tool I've ever used. My grades improved significantly in just one semester!"
+                &quot;Best study tool I&apos;ve ever used. My grades improved significantly in just one semester!&quot;
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-gradient-to-r from-[#2B74AB] to-[#265973] rounded-full flex items-center justify-center">

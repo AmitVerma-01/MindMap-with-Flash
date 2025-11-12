@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-export default function POST(){
+export async function POST(){
     return NextResponse.json({
         msg : "checkout route working fine"
     })
