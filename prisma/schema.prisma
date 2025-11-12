@@ -13,6 +13,38 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// model User{
-//   // id 
-// }
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  flashcardSets FlashcardSet[]
+}
+
+model FlashcardSet {
+  id        String   @id @default(cuid())
+  title     String
+  topic     String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  flashcards Flashcard[]
+  
+  @@index([userId])
+}
+
+model Flashcard {
+  id             String       @id @default(cuid())
+  front          String
+  back           String
+  flashcardSetId String
+  flashcardSet   FlashcardSet @relation(fields: [flashcardSetId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  
+  @@index([flashcardSetId])
+}
