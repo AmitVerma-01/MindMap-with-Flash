@@ -175,7 +175,7 @@ export default function Dashboard() {
           {currentCardIndex === selectedSet.flashcards.length - 1 && (
             <div className="mt-6 bg-green-500/20 border border-green-500 rounded-lg p-4 text-center">
               <p className="text-green-400 font-semibold">
-                🎉 You've reached the last card! Great job studying!
+                🎉 You&apos;ve reached the last card! Great job studying!
               </p>
             </div>
           )}
