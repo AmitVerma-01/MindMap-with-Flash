@@ -33,18 +33,20 @@ export default function NavBar() {
                     >
                         Home
                     </Link>
-                    <Link 
-                        href={'/pages/flashcards'} 
-                        className={`hover:text-[#CCFFFF] transition-colors ${isActive('/pages/flashcards') ? 'text-[#CCFFFF] font-semibold' : ''}`}
-                    >
-                        Generate
-                    </Link>
-                    <Link 
-                        href={'/dashboard'} 
-                        className={`hover:text-[#CCFFFF] transition-colors ${isActive('/dashboard') ? 'text-[#CCFFFF] font-semibold' : ''}`}
-                    >
-                        Dashboard
-                    </Link>
+                    <SignedIn>
+                        <Link 
+                            href={'/pages/flashcards'} 
+                            className={`hover:text-[#CCFFFF] transition-colors ${isActive('/pages/flashcards') ? 'text-[#CCFFFF] font-semibold' : ''}`}
+                        >
+                            Generate
+                        </Link>
+                        <Link 
+                            href={'/dashboard'} 
+                            className={`hover:text-[#CCFFFF] transition-colors ${isActive('/dashboard') ? 'text-[#CCFFFF] font-semibold' : ''}`}
+                        >
+                            Dashboard
+                        </Link>
+                    </SignedIn>
                     <Link 
                         href={'/pricing'} 
                         className={`hover:text-[#CCFFFF] transition-colors ${isActive('/pricing') ? 'text-[#CCFFFF] font-semibold' : ''}`}
@@ -107,20 +109,22 @@ export default function NavBar() {
                         >
                             Home
                         </Link>
-                        <Link 
-                            href={'/pages/flashcards'} 
-                            onClick={() => setMobileMenuOpen(false)}
-                            className={`hover:text-[#CCFFFF] transition-colors py-2 text-sm ${isActive('/pages/flashcards') ? 'text-[#CCFFFF] font-semibold' : ''}`}
-                        >
-                            Generate
-                        </Link>
-                        <Link 
-                            href={'/dashboard'} 
-                            onClick={() => setMobileMenuOpen(false)}
-                            className={`hover:text-[#CCFFFF] transition-colors py-2 text-sm ${isActive('/dashboard') ? 'text-[#CCFFFF] font-semibold' : ''}`}
-                        >
-                            Dashboard
-                        </Link>
+                        <SignedIn>
+                            <Link 
+                                href={'/pages/flashcards'} 
+                                onClick={() => setMobileMenuOpen(false)}
+                                className={`hover:text-[#CCFFFF] transition-colors py-2 text-sm ${isActive('/pages/flashcards') ? 'text-[#CCFFFF] font-semibold' : ''}`}
+                            >
+                                Generate
+                            </Link>
+                            <Link 
+                                href={'/dashboard'} 
+                                onClick={() => setMobileMenuOpen(false)}
+                                className={`hover:text-[#CCFFFF] transition-colors py-2 text-sm ${isActive('/dashboard') ? 'text-[#CCFFFF] font-semibold' : ''}`}
+                            >
+                                Dashboard
+                            </Link>
+                        </SignedIn>
                         <Link 
                             href={'/pricing'} 
                             onClick={() => setMobileMenuOpen(false)}

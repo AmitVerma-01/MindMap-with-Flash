@@ -4,13 +4,22 @@ import Flashcard from "@/components/flashcard"
 import Spinner from "@/components/spinner"
 import { useUser } from "@clerk/nextjs"
 import axios from "axios"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import type { Flashcard as FlashcardType } from "@/types/flashcard"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/useToast"
+import Link from "next/link"
+
+interface UsageStats {
+    cardsThisWeek: number;
+    limit: number;
+    remaining: number;
+    plan: string;
+    isPro: boolean;
+}
 
 export default function Flashcards() {
-    const { user } = useUser()
+    const { user, isLoaded } = useUser()
     const router = useRouter()
     const toast = useToast()
     const [loading, setLoading] = useState<boolean>(false)
@@ -20,9 +29,44 @@ export default function Flashcards() {
     const [flippedIndex, setFlippedIndex] = useState<number | null>(null)
     const [showSaveModal, setShowSaveModal] = useState<boolean>(false)
     const [setTitle, setSetTitle] = useState<string>('')
+    const [usageStats, setUsageStats] = useState<UsageStats | null>(null)
+
+    useEffect(() => {
+        if (isLoaded && user) {
+            fetchUsageStats()
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user, isLoaded])
+
+    const fetchUsageStats = async () => {
+        try {
+            const response = await axios.get('/api/credits')
+            if (response.data.needsPlanSelection) {
+                // Redirect to pricing if no plan selected
+                toast.warning("Please select a plan to start generating flashcards");
+                setTimeout(() => router.push('/pricing'), 1500);
+                return;
+            }
+            setUsageStats({
+                cardsThisWeek: response.data.creditsUsed,
+                limit: response.data.monthlyCredits,
+                remaining: response.data.remaining,
+                plan: response.data.plan,
+                isPro: response.data.plan === 'pro'
+            })
+        } catch (error) {
+            console.error("Error fetching credit stats:", error)
+        }
+    }
 
     const handleGenerate = async (e: React.FormEvent<HTMLButtonElement>) => {
         e.preventDefault()
+        
+        if (!user) {
+            toast.warning("Please sign in to generate flashcards");
+            router.push('/sign-in');
+            return;
+        }
         
         if (!topic.trim()) {
             toast.warning("Please enter a topic or question");
@@ -41,10 +85,47 @@ export default function Flashcards() {
             
             setFlashcards(response.data.flashcard)
             setFlippedIndex(null)
+            
+            // Update credit stats
+            if (response.data.credits) {
+                setUsageStats({
+                    cardsThisWeek: response.data.credits.limit - response.data.credits.remaining,
+                    limit: response.data.credits.limit,
+                    remaining: response.data.credits.remaining,
+                    plan: response.data.credits.plan,
+                    isPro: response.data.credits.plan === 'pro'
+                })
+            }
+            
             toast.success(`Generated ${response.data.flashcard.length} flashcards!`);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error generating flashcards:", error);
-            toast.error(error instanceof Error ? error.message : "Failed to generate flashcards. Please try again.");
+            
+            if (error.response?.status === 401) {
+                toast.error("Please sign in to generate flashcards");
+                router.push('/sign-in');
+            } else if (error.response?.status === 402) {
+                // User needs to select a plan
+                const errorData = error.response.data;
+                toast.error(errorData.error || "Please select a plan to continue");
+                setTimeout(() => router.push('/pricing'), 1500);
+            } else if (error.response?.status === 403) {
+                const errorData = error.response.data;
+                toast.error(errorData.error || "Insufficient credits");
+                
+                // Update credit stats from error response
+                if (errorData.remaining !== undefined) {
+                    setUsageStats({
+                        cardsThisWeek: errorData.limit - errorData.remaining,
+                        limit: errorData.limit,
+                        remaining: errorData.remaining,
+                        plan: errorData.plan,
+                        isPro: false
+                    })
+                }
+            } else {
+                toast.error(error.response?.data?.error || "Failed to generate flashcards. Please try again.");
+            }
         } finally {
             setLoading(false)
         }
@@ -105,6 +186,61 @@ export default function Flashcards() {
                     </h1>
                     <p className="text-gray-300 text-lg">Transform any topic into interactive learning cards</p>
                 </div>
+
+                {/* Usage Stats Banner */}
+                {user && usageStats && (
+                    <div className="w-full flex justify-center items-center mb-6">
+                        <div className="w-full max-w-3xl">
+                            {usageStats.isPro ? (
+                                <div className="glass-card p-4 rounded-xl border-2 border-[#CCFFFF]/30">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 rounded-lg bg-gradient-to-r from-[#2B74AB]/20 to-[#265973]/20">
+                                                <svg className="w-5 h-5 text-[#CCFFFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <p className="text-white font-bold text-sm">Pro Plan Active</p>
+                                                <p className="text-gray-400 text-xs">{usageStats.cardsThisWeek} cards generated this week</p>
+                                            </div>
+                                        </div>
+                                        <div className="px-3 py-1 rounded-full bg-gradient-to-r from-[#2B74AB] to-[#265973]">
+                                            <span className="text-xs font-bold text-white">∞ UNLIMITED</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="glass-card p-4 rounded-xl">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 rounded-lg bg-white/5">
+                                                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <p className="text-white font-bold text-sm">Free Plan</p>
+                                                <p className="text-gray-400 text-xs">{usageStats.remaining} of {usageStats.limit} cards remaining this week</p>
+                                            </div>
+                                        </div>
+                                        <Link href="/pricing">
+                                            <button className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#2B74AB] to-[#265973] text-white text-xs font-bold hover:scale-105 transition-transform">
+                                                Upgrade to Pro
+                                            </button>
+                                        </Link>
+                                    </div>
+                                    <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+                                        <div 
+                                            className="h-2 rounded-full bg-gradient-to-r from-[#2B74AB] to-[#CCFFFF] transition-all duration-500"
+                                            style={{ width: `${(usageStats.remaining / usageStats.limit) * 100}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
 
                 {/* Input Form with liquid glass */}
                 <div className="w-full flex justify-center items-center mb-12">

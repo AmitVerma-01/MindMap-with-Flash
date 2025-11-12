@@ -11,11 +11,11 @@
   "dependencies": {
     "@clerk/clerk-react": "^5.4.1",
     "@clerk/nextjs": "^5.3.1",
-    "@prisma/client": "^5.18.0",
+    "@prisma/client": "^6.19.0",
     "axios": "^1.7.4",
     "next": "14.2.5",
     "openai": "^4.56.0",
-    "prisma": "^5.18.0",
+    "prisma": "^6.19.0",
     "react": "^18",
     "react-card-flip": "^1.2.3",
     "react-dom": "^18",

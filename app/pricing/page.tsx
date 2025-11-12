@@ -1,6 +1,44 @@
 'use client'
 
+import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import axios from "axios";
+
 export default function Pricing() {
+  const { user } = useUser();
+  const router = useRouter();
+  const [loading, setLoading] = useState<string | null>(null);
+
+  const handleSelectPlan = async (plan: "free") => {
+    if (!user) {
+      router.push('/sign-in');
+      return;
+    }
+
+    // Only allow free plan for now
+    if (plan !== 'free') {
+      alert('Pro plan is coming soon! Stay tuned.');
+      return;
+    }
+
+    setLoading(plan);
+    try {
+      const response = await axios.post('/api/select-plan', { plan });
+      
+      if (response.data.success) {
+        // Show success message
+        alert(`✅ ${response.data.message}`);
+        // Redirect to flashcard generation
+        router.push('/pages/flashcards');
+      }
+    } catch (error) {
+      console.error("Error selecting plan:", error);
+      alert("Failed to select plan. Please try again.");
+    } finally {
+      setLoading(null);
+    }
+  };
   return (
     <div className="relative min-h-screen overflow-hidden">
       {/* Animated liquid background */}
@@ -52,7 +90,7 @@ export default function Pricing() {
                 <svg className="w-5 h-5 text-[#CCFFFF] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span className="text-gray-300 text-sm">50 flashcards per week</span>
+                <span className="text-gray-300 text-sm">50 credits per month</span>
               </li>
               <li className="flex items-start gap-2">
                 <svg className="w-5 h-5 text-[#CCFFFF] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -92,87 +130,90 @@ export default function Pricing() {
               </li>
             </ul>
 
-            <button className="w-full glass-button px-6 py-3 rounded-lg text-white text-sm font-bold opacity-50 cursor-not-allowed mt-auto">
-              Current Plan
+            <button 
+              onClick={() => handleSelectPlan('free')}
+              disabled={loading !== null}
+              className="w-full glass-button px-6 py-3 rounded-lg text-white text-sm font-bold hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed mt-auto"
+            >
+              {loading === 'free' ? 'Selecting...' : 'Select Free Plan'}
             </button>
           </div>
 
-          {/* Pro Plan */}
-          <div className="glass-card glass-card-hover p-6 rounded-2xl relative border-2 border-[#CCFFFF]/30 flex flex-col">
-            {/* Popular Badge */}
+          {/* Pro Plan - Coming Soon */}
+          <div className="glass-card p-6 rounded-2xl relative border-2 border-gray-600/30 flex flex-col opacity-60">
+            {/* Coming Soon Badge */}
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-              <div className="bg-gradient-to-r from-[#2B74AB] to-[#265973] px-4 py-1.5 rounded-full shadow-lg">
-                <span className="text-xs font-bold text-white">⭐ MOST POPULAR</span>
+              <div className="bg-gradient-to-r from-gray-600 to-gray-700 px-4 py-1.5 rounded-full shadow-lg">
+                <span className="text-xs font-bold text-white">🚀 COMING SOON</span>
               </div>
             </div>
 
             <div className="mb-4 mt-3">
-              <div className="inline-block px-3 py-0.5 rounded-full bg-gradient-to-r from-[#2B74AB]/30 to-[#265973]/30 border border-[#CCFFFF]/20 mb-3">
-                <span className="text-xs font-bold text-[#CCFFFF]">PRO</span>
+              <div className="inline-block px-3 py-0.5 rounded-full bg-gray-600/30 border border-gray-500/20 mb-3">
+                <span className="text-xs font-bold text-gray-400">PRO</span>
               </div>
-              <h3 className="text-2xl font-bold text-white mb-1.5">Professional</h3>
-              <p className="text-gray-400 text-sm">For serious learners and students</p>
+              <h3 className="text-2xl font-bold text-gray-300 mb-1.5">Professional</h3>
+              <p className="text-gray-500 text-sm">For serious learners and students</p>
             </div>
 
             <div className="mb-6">
               <div className="flex items-baseline gap-1.5">
-                <span className="text-4xl font-bold text-white">$5</span>
-                <span className="text-gray-400 text-sm">/month</span>
+                <span className="text-4xl font-bold text-gray-300">$5</span>
+                <span className="text-gray-500 text-sm">/month</span>
               </div>
-              <p className="text-xs text-[#CCFFFF] mt-1.5">Save 20% with annual billing</p>
+              <p className="text-xs text-gray-500 mt-1.5">Available soon</p>
             </div>
 
             <ul className="space-y-3 mb-6 flex-grow">
               <li className="flex items-start gap-2">
-                <svg className="w-5 h-5 text-[#CCFFFF] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span className="text-gray-300 text-sm font-semibold">Unlimited flashcards</span>
+                <span className="text-gray-500 text-sm font-semibold">300 credits per month</span>
               </li>
               <li className="flex items-start gap-2">
-                <svg className="w-5 h-5 text-[#CCFFFF] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span className="text-gray-300 text-sm font-semibold">Advanced AI generation</span>
+                <span className="text-gray-500 text-sm font-semibold">Advanced AI generation</span>
               </li>
               <li className="flex items-start gap-2">
-                <svg className="w-5 h-5 text-[#CCFFFF] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span className="text-gray-300 text-sm font-semibold">Unlimited sets</span>
+                <span className="text-gray-500 text-sm font-semibold">Unlimited sets</span>
               </li>
               <li className="flex items-start gap-2">
-                <svg className="w-5 h-5 text-[#CCFFFF] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span className="text-gray-300 text-sm">Advanced study modes</span>
+                <span className="text-gray-500 text-sm">Advanced study modes</span>
               </li>
               <li className="flex items-start gap-2">
-                <svg className="w-5 h-5 text-[#CCFFFF] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span className="text-gray-300 text-sm">Progress analytics</span>
+                <span className="text-gray-500 text-sm">Progress analytics</span>
               </li>
               <li className="flex items-start gap-2">
-                <svg className="w-5 h-5 text-[#CCFFFF] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span className="text-gray-300 text-sm">Priority support</span>
+                <span className="text-gray-500 text-sm">Priority support</span>
               </li>
               <li className="flex items-start gap-2">
-                <svg className="w-5 h-5 text-[#CCFFFF] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span className="text-gray-300 text-sm">Export & share features</span>
+                <span className="text-gray-500 text-sm">Export & share features</span>
               </li>
             </ul>
 
-            <button className="w-full group relative overflow-hidden mt-auto">
-              <div className="absolute inset-0 bg-gradient-to-r from-[#2B74AB] to-[#265973] rounded-lg"></div>
-              <div className="absolute inset-0 bg-gradient-to-r from-[#2B74AB] to-[#265973] rounded-lg opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500"></div>
-              <div className="relative px-6 py-3 text-sm font-bold text-white transition-transform group-hover:scale-105">
-                Upgrade to Pro
-              </div>
+            <button 
+              disabled
+              className="w-full px-6 py-3 rounded-lg text-gray-500 text-sm font-bold bg-gray-700/30 cursor-not-allowed mt-auto"
+            >
+              Coming Soon
             </button>
           </div>
         </div>

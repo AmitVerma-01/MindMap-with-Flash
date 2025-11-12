@@ -17,6 +17,14 @@ model User {
   id        String   @id @default(cuid())
   clerkId   String   @unique
   email     String   @unique
+  plan      String?  // null = no plan selected, "free" or "pro"
+  stripeCustomerId String? @unique
+  stripeSubscriptionId String? @unique
+  subscriptionStatus String? // "active", "canceled", "past_due"
+  currentPeriodStart DateTime?
+  currentPeriodEnd DateTime?
+  monthlyCredits Int @default(0) // Total credits for current month
+  creditsUsed Int @default(0) // Credits used in current month
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   

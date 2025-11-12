@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
+import { auth } from "@clerk/nextjs/server";
+import { checkCredits, deductCredits } from "@/lib/credits";
 
 if (!process.env.OPENROUTER_API_KEY) {
   throw new Error("OPENROUTER_API_KEY is not defined in environment variables");
@@ -154,6 +156,19 @@ Provide a clear, accurate, and helpful answer.`;
 
 export async function POST(req: NextRequest) {
   try {
+    // Check authentication
+    const { userId } = await auth();
+    
+    if (!userId) {
+      console.log("No userId found in auth");
+      return NextResponse.json(
+        { error: "Please sign in to generate flashcards" }, 
+        { status: 401 }
+      );
+    }
+
+    console.log("Authenticated user:", userId);
+
     const data = await req.json();
     
     if (!data.topic && !data.ques) {
@@ -163,8 +178,61 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Estimate number of cards to be generated
+    const estimatedCards = data.counts ? parseInt(data.counts) : (data.ques ? 1 : 6);
+    console.log("Estimated cards to generate:", estimatedCards);
+
+    // Check credits
+    console.log("Checking credits for user:", userId);
+    const creditCheck = await checkCredits(userId, estimatedCards);
+    console.log("Credit check result:", creditCheck);
+    
+    // If user needs to select a plan, redirect to pricing
+    if (creditCheck.needsPlanSelection) {
+      return NextResponse.json(
+        { 
+          error: creditCheck.message || "Please select a plan to continue",
+          needsPlanSelection: true,
+          redirectTo: "/pricing",
+        }, 
+        { status: 402 } // 402 Payment Required
+      );
+    }
+
+    // If user doesn't have enough credits
+    if (!creditCheck.allowed) {
+      console.log("Insufficient credits:", creditCheck);
+      return NextResponse.json(
+        { 
+          error: creditCheck.message || "Insufficient credits",
+          remaining: creditCheck.remaining,
+          limit: creditCheck.limit,
+          plan: creditCheck.plan,
+        }, 
+        { status: 403 }
+      );
+    }
+
+    // Generate flashcards
     const flashcards = await createFlashcards(data);
-    return NextResponse.json(flashcards, { status: 200 });
+    
+    // Deduct credits
+    const actualCards = flashcards.flashcard?.length || 0;
+    if (actualCards > 0) {
+      await deductCredits(userId, actualCards);
+    }
+
+    // Get updated credit stats
+    const updatedCheck = await checkCredits(userId, 0);
+
+    return NextResponse.json({
+      ...flashcards,
+      credits: {
+        remaining: updatedCheck.remaining,
+        limit: updatedCheck.limit,
+        plan: updatedCheck.plan,
+      }
+    }, { status: 200 });
   } catch (error) {
     console.error("Error handling POST request:", error);
     const errorMessage = error instanceof Error ? error.message : "Failed to process request";
