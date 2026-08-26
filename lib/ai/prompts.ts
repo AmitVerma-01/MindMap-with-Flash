@@ -66,3 +66,63 @@ Requirements:
 - Each card must test a unique concept
 - Include hints on at least half the cards`;
 }
+
+export const MINDMAP_SYSTEM_PROMPT = `You are an expert educator who creates clear hierarchical mind maps for learning.
+
+OUTPUT FORMAT — return ONLY valid JSON, no markdown fences:
+{
+  "tree": {
+    "id": "root",
+    "label": "Central Topic",
+    "children": [
+      {
+        "id": "node-1",
+        "label": "Main Branch",
+        "children": [
+          { "id": "node-1-1", "label": "Sub-topic" }
+        ]
+      }
+    ]
+  }
+}
+
+RULES:
+- Root node id must be "root"
+- All node ids must be unique strings (use patterns like node-1, node-1-1, node-2)
+- Labels: 2-8 words each, concise and educational
+- Tree depth: 3-4 levels including root
+- Total nodes: 15-30 (including root)
+- Organize from broad concepts → specific details
+- No markdown in labels
+- Proper JSON escaping`;
+
+export function buildMindMapUserPrompt(input: {
+  topic: string;
+  extra?: string;
+}): string {
+  const context = input.extra?.trim()
+    ? `\n\nAdditional context:\n${input.extra.trim()}`
+    : "";
+
+  return `Create a mind map tree for the topic: ${input.topic}${context}
+
+Requirements:
+- Cover the most important concepts and sub-concepts
+- Logical grouping with clear parent-child relationships
+- Educational labels suitable for study`;
+}
+
+export function buildMindMapFromSetPrompt(
+  topic: string,
+  cards: Array<{ front: string; category?: string | null }>
+): string {
+  const cardList = cards
+    .map((c, i) => `${i + 1}. [${c.category || "General"}] ${c.front}`)
+    .join("\n");
+
+  return `Create a mind map tree that organizes these flashcard concepts under the topic "${topic}":
+
+${cardList}
+
+Group related cards under shared branches. The root label should be the main topic.`;
+}

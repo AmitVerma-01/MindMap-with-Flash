@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
+import { ensureUser } from "@/lib/user";
 
 export const dynamic = "force-dynamic";
 
@@ -58,28 +60,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Find or create user
-    let user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-    });
-
-    if (!user) {
-      // Get user email from Clerk
-      const clerkUser = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
-        headers: {
-          Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}`,
-        },
-      }).then((res) => res.json());
-
-      const email = clerkUser.email_addresses?.[0]?.email_address || `${userId}@temp.com`;
-
-      user = await prisma.user.create({
-        data: {
-          clerkId: userId,
-          email: email,
-        },
-      });
-    }
+    const clerkUser = await currentUser();
+    const email =
+      clerkUser?.emailAddresses?.[0]?.emailAddress || `${userId}@temp.com`;
+    const user = await ensureUser(userId, email);
 
     // Create flashcard set with flashcards
     const flashcardSet = await prisma.flashcardSet.create({

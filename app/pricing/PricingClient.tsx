@@ -2,13 +2,13 @@
 
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { useState } from "react";
 import PageBackground from "@/components/layout/PageBackground";
 import PageHeader from "@/components/layout/PageHeader";
 import Card from "@/components/ui/Card";
 import PriceCard from "@/components/PriceCard";
 import { useToast } from "@/hooks/useToast";
+import { selectPlan } from "@/app/actions/plan";
 import type { PlanSlug } from "@/lib/plans";
 
 interface PlanFromApi {
@@ -20,52 +20,16 @@ interface PlanFromApi {
   selectable: boolean;
 }
 
-export default function PricingClient() {
+interface PricingClientProps {
+  initialPlans: PlanFromApi[];
+}
+
+export default function PricingClient({ initialPlans }: PricingClientProps) {
   const { user } = useUser();
   const router = useRouter();
   const toast = useToast();
   const [loading, setLoading] = useState<string | null>(null);
-  const [plans, setPlans] = useState<PlanFromApi[]>([]);
-  const [plansLoading, setPlansLoading] = useState(true);
-
-  useEffect(() => {
-    let active = true;
-
-    axios
-      .get("/api/plans")
-      .then((res) => {
-        if (!active) return;
-        setPlans(res.data.plans ?? []);
-      })
-      .catch(() => {
-        if (!active) return;
-        setPlans([
-          {
-            slug: "free",
-            name: "Starter",
-            monthlyCredits: 50,
-            price: 0,
-            description: "Perfect for trying out the platform",
-            selectable: true,
-          },
-          {
-            slug: "pro",
-            name: "Professional",
-            monthlyCredits: 300,
-            price: 5,
-            description: "For serious learners and power users",
-            selectable: false,
-          },
-        ]);
-      })
-      .finally(() => {
-        if (active) setPlansLoading(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, []);
+  const plans = initialPlans;
 
   const handleSelectPlan = async (plan: PlanSlug) => {
     if (!user) {
@@ -81,11 +45,13 @@ export default function PricingClient() {
 
     setLoading(plan);
     try {
-      const response = await axios.post("/api/select-plan", { plan });
+      const result = await selectPlan(plan);
 
-      if (response.data.success) {
-        toast.success(response.data.message || "Plan selected successfully!");
+      if (result.success) {
+        toast.success(result.data.message || "Plan selected successfully!");
         router.push("/pages/flashcards");
+      } else {
+        toast.error(result.error);
       }
     } catch (error) {
       console.error("Error selecting plan:", error);
@@ -107,9 +73,9 @@ export default function PricingClient() {
           subtitle="Start free and upgrade anytime. All plans include AI-powered flashcard generation."
         />
 
-        {plansLoading ? (
-          <Card className="max-w-md mx-auto text-center py-12">
-            <p className="text-muted">Loading plans...</p>
+        {plans.length === 0 ? (
+          <Card className="max-w-md mx-auto text-center py-12 mb-16">
+            <p className="text-muted">No plans available.</p>
           </Card>
         ) : (
           <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto items-stretch mb-16">

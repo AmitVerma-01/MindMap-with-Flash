@@ -35,6 +35,7 @@ export default function NavBar() {
                     <Link href="/" className={navLinkClass('/')}>Home</Link>
                     <SignedIn>
                         <Link href="/pages/flashcards" className={navLinkClass('/pages/flashcards')}>Generate</Link>
+                        <Link href="/pages/mindmap" className={navLinkClass('/pages/mindmap')}>Mind Map</Link>
                         <Link href="/dashboard" className={navLinkClass('/dashboard')}>Dashboard</Link>
                     </SignedIn>
                     <Link href="/pricing" className={navLinkClass('/pricing')}>Pricing</Link>
@@ -90,6 +91,7 @@ export default function NavBar() {
                         <Link href="/" onClick={() => setMobileMenuOpen(false)} className={cn(navLinkClass('/'), "py-2 text-sm")}>Home</Link>
                         <SignedIn>
                             <Link href="/pages/flashcards" onClick={() => setMobileMenuOpen(false)} className={cn(navLinkClass('/pages/flashcards'), "py-2 text-sm")}>Generate</Link>
+                            <Link href="/pages/mindmap" onClick={() => setMobileMenuOpen(false)} className={cn(navLinkClass('/pages/mindmap'), "py-2 text-sm")}>Mind Map</Link>
                             <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className={cn(navLinkClass('/dashboard'), "py-2 text-sm")}>Dashboard</Link>
                         </SignedIn>
                         <Link href="/pricing" onClick={() => setMobileMenuOpen(false)} className={cn(navLinkClass('/pricing'), "py-2 text-sm")}>Pricing</Link>

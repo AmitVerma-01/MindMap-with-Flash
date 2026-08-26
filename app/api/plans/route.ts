@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getActivePlans } from "@/lib/plans-db";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export async function GET() {
   try {

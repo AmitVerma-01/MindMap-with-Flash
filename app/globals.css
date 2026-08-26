@@ -48,6 +48,57 @@
     transform: rotateY(180deg);
   }
 
+  .flip-inner {
+    will-change: transform;
+  }
+
+  .flip-pressable:active .flip-inner {
+    transform: scale(0.98);
+  }
+
+  .flip-pressable:active .flip-inner.rotate-y-180 {
+    transform: rotateY(180deg) scale(0.98);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .flip-inner {
+      transition: none !important;
+      will-change: auto;
+    }
+
+    .flip-reduced-motion .flip-front {
+      transition: opacity 0.15s ease;
+    }
+
+    .flip-reduced-motion .flip-back {
+      transition: opacity 0.15s ease;
+    }
+
+    .flip-reduced-motion:not(.is-flipped) .flip-back {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .flip-reduced-motion.is-flipped .flip-front {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .flip-reduced-motion.is-flipped .flip-back {
+      opacity: 1;
+    }
+
+    .flip-reduced-motion:not(.is-flipped) .flip-front {
+      opacity: 1;
+    }
+
+    .flip-reduced-motion .flip-back {
+      transform: none !important;
+      position: absolute;
+      inset: 0;
+    }
+  }
+
   .animate-fade-in {
     animation: fadeIn 0.8s ease-in;
   }

@@ -82,3 +82,76 @@ export function parseFlashcardResponse(content: string): Flashcard[] {
 
   return cards;
 }
+
+function normalizeMindMapNode(
+  raw: Record<string, unknown>,
+  fallbackId: string
+): import("@/types/mindmap").MindMapTreeNode | null {
+  const label = typeof raw.label === "string" ? raw.label.trim() : "";
+  if (!label) return null;
+
+  const id =
+    typeof raw.id === "string" && raw.id.trim() ? raw.id.trim() : fallbackId;
+
+  const node: import("@/types/mindmap").MindMapTreeNode = { id, label };
+
+  if (Array.isArray(raw.children)) {
+    const children = raw.children
+      .map((child, index) =>
+        child && typeof child === "object"
+          ? normalizeMindMapNode(
+              child as Record<string, unknown>,
+              `${id}-${index + 1}`
+            )
+          : null
+      )
+      .filter(
+        (child): child is import("@/types/mindmap").MindMapTreeNode =>
+          child !== null
+      );
+    if (children.length > 0) {
+      node.children = children;
+    }
+  }
+
+  return node;
+}
+
+export function parseMindMapResponse(
+  content: string
+): import("@/types/mindmap").MindMapTreeNode {
+  const jsonText = extractJsonObject(content);
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(jsonText);
+  } catch {
+    throw new Error("Failed to parse AI response as JSON");
+  }
+
+  const record = parsed as Record<string, unknown>;
+  const rawTree = record.tree ?? record.mindmap ?? record.root;
+
+  if (!rawTree || typeof rawTree !== "object") {
+    throw new Error("Invalid mind map format: missing tree object");
+  }
+
+  const tree = normalizeMindMapNode(rawTree as Record<string, unknown>, "root");
+  if (!tree) {
+    throw new Error("Invalid mind map: root node has no label");
+  }
+
+  return tree;
+}
+
+export function countMindMapNodes(
+  node: import("@/types/mindmap").MindMapTreeNode
+): number {
+  let count = 1;
+  if (node.children) {
+    for (const child of node.children) {
+      count += countMindMapNodes(child);
+    }
+  }
+  return count;
+}
