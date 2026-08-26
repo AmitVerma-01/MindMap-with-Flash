@@ -9,18 +9,16 @@ import {
   type ReactNode,
 } from "react";
 import { cn } from "@/lib/cn";
-import Badge from "@/components/ui/Badge";
-import Button from "@/components/ui/Button";
 import {
   GRADE_LABELS,
   type ReviewGrade,
 } from "@/types/study";
 import type { FlashcardDifficulty } from "@/types/flashcard";
 
-const difficultyVariant = {
-  beginner: "success" as const,
-  intermediate: "warning" as const,
-  advanced: "primary" as const,
+const difficultyTone: Record<FlashcardDifficulty, string> = {
+  beginner: "study-card-tag--beginner",
+  intermediate: "study-card-tag--intermediate",
+  advanced: "study-card-tag--advanced",
 };
 
 export interface StudyFlipCardContent {
@@ -48,6 +46,7 @@ interface StudyFlipCardProps {
 }
 
 const SWIPE_THRESHOLD = 50;
+const GRADES: ReviewGrade[] = ["again", "hard", "good", "easy"];
 
 export default function StudyFlipCard({
   card,
@@ -122,18 +121,19 @@ export default function StudyFlipCard({
     const dy = touch.clientY - touchStart.current.y;
     touchStart.current = null;
 
-    if (
-      Math.abs(dx) > SWIPE_THRESHOLD ||
-      Math.abs(dy) > SWIPE_THRESHOLD
-    ) {
+    if (Math.abs(dx) > SWIPE_THRESHOLD || Math.abs(dy) > SWIPE_THRESHOLD) {
       handleFlip();
     }
   };
 
   const difficulty = card.difficulty as FlashcardDifficulty | undefined;
+  const difficultyClass =
+    difficulty && difficultyTone[difficulty]
+      ? difficultyTone[difficulty]
+      : "study-card-tag--neutral";
 
   return (
-    <div className={cn("w-full", className)}>
+    <div className={cn("study-card-root", className)}>
       <div
         role="button"
         tabIndex={0}
@@ -144,117 +144,115 @@ export default function StudyFlipCard({
         aria-label={isFlipped ? `Answer: ${card.back}` : `Question: ${card.front}`}
         aria-pressed={isFlipped}
         className={cn(
-          "w-full perspective-1000 cursor-pointer focus-ring rounded-2xl flip-pressable",
+          "study-card-scene focus-ring",
           heightClass,
-          reducedMotion && "flip-reduced-motion",
-          isFlipped && reducedMotion && "is-flipped"
+          reducedMotion && "study-card-scene--reduced",
+          isFlipped && reducedMotion && "study-card-scene--flipped"
         )}
       >
         <div
           key={cardKey}
           className={cn(
-            "relative w-full preserve-3d flip-inner transition-transform duration-500 animate-fade-in",
+            "study-card-inner",
             heightClass,
-            !reducedMotion && isFlipped && "rotate-y-180"
+            !reducedMotion && isFlipped && "study-card-inner--flipped"
           )}
         >
-          {/* Question side */}
-          <div
-            className={cn(
-              "absolute inset-0 backface-hidden flip-front glass-card glass-card-hover p-5 md:p-6 rounded-2xl overflow-hidden flex flex-col",
-              !isFlipped && !reducedMotion && "glow"
-            )}
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-accent-teal/10 to-background/30 opacity-80" />
-            <div className="relative z-10 flex flex-col h-full">
-              <div className="flex flex-wrap items-center gap-2 mb-3">
-                <CardLabel label="QUESTION" />
+          <article className="study-card-face study-card-face--front">
+            <div className="study-card-face__glow study-card-face__glow--front" aria-hidden />
+            <header className="study-card-face__header">
+              <span className="study-card-side-label study-card-side-label--front">
+                Question
+              </span>
+              <div className="study-card-meta">
                 {card.category && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface border border-border text-muted">
+                  <span className="study-card-tag study-card-tag--neutral">
                     {card.category}
                   </span>
                 )}
-                {difficulty && difficultyVariant[difficulty] && (
-                  <Badge variant={difficultyVariant[difficulty]} className="text-[10px]">
+                {difficulty && (
+                  <span className={cn("study-card-tag", difficultyClass)}>
                     {difficulty}
-                  </Badge>
+                  </span>
                 )}
               </div>
-              <p className="text-foreground text-center font-semibold text-base md:text-xl leading-relaxed px-1 flex-1 flex items-center justify-center">
-                {card.front}
-              </p>
-              {showHints && card.hint && (
-                <p className="text-primary/80 text-xs text-center mt-2 italic">
-                  Hint: {card.hint}
-                </p>
-              )}
-              <p className="text-muted text-xs text-center mt-3">
-                Click, swipe, or press Space to reveal
-              </p>
-            </div>
-          </div>
+            </header>
 
-          {/* Answer side */}
-          <div
-            className={cn(
-              "absolute inset-0 backface-hidden flip-back rotate-y-180 glass-card glass-card-hover p-5 md:p-6 rounded-2xl overflow-hidden flex flex-col",
-              isFlipped && !reducedMotion && "glow-cyan"
+            <div className="study-card-body">
+              <p className="study-card-text study-card-text--question">{card.front}</p>
+            </div>
+
+            {showHints && card.hint && (
+              <aside className="study-card-hint">
+                <span className="study-card-hint__label">Hint</span>
+                <span className="study-card-hint__text">{card.hint}</span>
+              </aside>
             )}
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-accent-teal/20 via-accent-cyan/10 to-background/30 opacity-80" />
-            <div className="relative z-10 flex flex-col h-full">
-              <CardLabel label="ANSWER" />
-              <p className="text-foreground text-center font-medium text-base md:text-lg leading-relaxed overflow-y-auto flex-1 flex items-center justify-center px-1 mt-3">
-                {card.back}
-              </p>
-              {card.mnemonic && (
-                <p className="text-info text-xs text-center mt-2 bg-info/10 rounded-lg px-2 py-1">
-                  💡 {card.mnemonic}
-                </p>
-              )}
-              <p className="text-muted text-xs text-center mt-3">
+
+            <footer className="study-card-face__footer">
+              <span className="study-card-reveal-prompt">
+                Tap, swipe, or press Space to reveal
+              </span>
+            </footer>
+          </article>
+
+          <article className="study-card-face study-card-face--back">
+            <div className="study-card-face__glow study-card-face__glow--back" aria-hidden />
+            <header className="study-card-face__header">
+              <span className="study-card-side-label study-card-side-label--back">
+                Answer
+              </span>
+            </header>
+
+            <div className="study-card-body">
+              <p className="study-card-text study-card-text--answer">{card.back}</p>
+            </div>
+
+            {card.mnemonic && (
+              <aside className="study-card-mnemonic">
+                <span className="study-card-mnemonic__icon" aria-hidden>
+                  ✦
+                </span>
+                <span className="study-card-mnemonic__text">{card.mnemonic}</span>
+              </aside>
+            )}
+
+            <footer className="study-card-face__footer">
+              <span className="study-card-reveal-prompt">
                 {showGradeButtons
                   ? "Rate yourself below or press 1–4"
-                  : "Click or press Space to flip back"}
-              </p>
-            </div>
-          </div>
+                  : "Tap or press Space to flip back"}
+              </span>
+            </footer>
+          </article>
         </div>
       </div>
 
       {footerHint}
 
       {showGradeButtons && isFlipped && onGrade && (
-        <div className="flex flex-col sm:flex-row justify-center gap-2 mt-4">
-          {(["again", "hard", "good", "easy"] as ReviewGrade[]).map((grade, i) => (
-            <Button
+        <div className="study-card-grades" role="group" aria-label="Rate recall">
+          {GRADES.map((grade, i) => (
+            <button
               key={grade}
-              variant={grade === "again" ? "danger" : grade === "easy" ? "primary" : "secondary"}
-              size="sm"
+              type="button"
               onClick={() => onGrade(grade)}
-              className="flex-1 sm:flex-none"
+              className={cn("study-card-grade", `study-card-grade--${grade}`)}
             >
-              {GRADE_LABELS[grade]} ({i + 1})
-            </Button>
+              <span className="study-card-grade__label">{GRADE_LABELS[grade]}</span>
+              <span className="study-card-grade__key">{i + 1}</span>
+            </button>
           ))}
         </div>
       )}
 
       {showKeyboardHints && (
-        <div className="flex flex-wrap justify-center gap-3 mt-3 text-[10px] text-muted">
+        <div className="study-card-shortcuts" aria-hidden>
           <span>Space — flip</span>
           {showGradeButtons && <span>1–4 — rate</span>}
           {onPrevious && <span>← — previous</span>}
         </div>
       )}
     </div>
-  );
-}
-
-function CardLabel({ label }: { label: string }) {
-  return (
-    <span className="inline-block px-2.5 py-0.5 rounded-full bg-surface border border-border text-[10px] font-bold text-foreground/90 tracking-wider">
-      {label}
-    </span>
   );
 }
