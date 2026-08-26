@@ -1,84 +1,168 @@
-import ReactCardFlip from "react-card-flip"
+"use client";
 
-export default function Flashcard({ front, back, index, flippedIndex, setFlippedIndex }: 
-    { front: string, back: string, index: number, flippedIndex: number | null, setFlippedIndex: (i: number | null) => void }) {
-const isFlipped = flippedIndex === index
-const handleClick = () => {
-setFlippedIndex(isFlipped ? null : index)
+import type { KeyboardEvent } from "react";
+import { cn } from "@/lib/cn";
+import type { Flashcard as FlashcardType } from "@/types/flashcard";
+import Badge from "@/components/ui/Badge";
+
+interface FlashcardProps {
+  card: FlashcardType;
+  index: number;
+  flippedIndex: number | null;
+  setFlippedIndex: (i: number | null) => void;
+  showHints?: boolean;
+  onDelete?: () => void;
+  onRegenerate?: () => void;
+  regenerating?: boolean;
 }
 
-return (
-    <div onClick={handleClick} className="w-full h-72 perspective-1000">
-        <ReactCardFlip
-            isFlipped={isFlipped}
-            flipDirection="horizontal"
-            >
-            {/* Question Side - Liquid Glass Brand Blue */}
-            <div className="relative w-full h-72 p-8 rounded-2xl cursor-pointer glass-card glass-card-hover group overflow-hidden">
-                {/* Animated gradient background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-[#2B74AB]/30 via-[#265973]/20 to-[#0F1438]/30 opacity-80"></div>
-                
-                {/* Shimmer effect */}
-                <div className="absolute inset-0 shimmer"></div>
-                
-                {/* Glow effect on hover */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 glow rounded-2xl"></div>
-                
-                {/* Content */}
-                <div className="relative z-10 flex flex-col justify-center items-center h-full">
-                    <div className="inline-block px-3 py-1 mb-4 rounded-full bg-white/10 backdrop-blur-sm border border-white/20">
-                        <span className="text-xs font-bold text-white/90 tracking-wider">QUESTION</span>
-                    </div>
-                    <div className="text-white text-center font-semibold text-lg leading-relaxed px-2 drop-shadow-lg">
-                        {front}
-                    </div>
-                    <div className="mt-6 flex items-center gap-2 text-white/60 text-xs">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
-                        </svg>
-                        <span>Click to reveal</span>
-                    </div>
-                </div>
+const difficultyVariant = {
+  beginner: "success" as const,
+  intermediate: "warning" as const,
+  advanced: "primary" as const,
+};
 
-                {/* Decorative elements */}
-                <div className="absolute top-4 right-4 w-20 h-20 bg-[#CCFFFF]/5 rounded-full blur-2xl"></div>
-                <div className="absolute bottom-4 left-4 w-16 h-16 bg-[#2B74AB]/10 rounded-full blur-xl"></div>
+export default function Flashcard({
+  card,
+  index,
+  flippedIndex,
+  setFlippedIndex,
+  showHints = true,
+  onDelete,
+  onRegenerate,
+  regenerating = false,
+}: FlashcardProps) {
+  const isFlipped = flippedIndex === index;
+  const { front, back, hint, difficulty, category, mnemonic } = card;
+
+  const handleClick = () => {
+    setFlippedIndex(isFlipped ? null : index);
+  };
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleClick();
+    }
+  };
+
+  return (
+    <div className="relative group">
+      <div className="absolute -top-2 -right-2 z-20 flex gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+        {onRegenerate && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRegenerate();
+            }}
+            disabled={regenerating}
+            className="w-7 h-7 rounded-full bg-primary/90 text-white text-xs font-bold focus-ring disabled:opacity-50"
+            aria-label={`Regenerate card ${index + 1}`}
+            title="Regenerate card"
+          >
+            {regenerating ? "…" : "↻"}
+          </button>
+        )}
+        {onDelete && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            className="w-7 h-7 rounded-full bg-danger/90 text-white text-xs font-bold focus-ring"
+            aria-label={`Remove card ${index + 1}`}
+          >
+            ×
+          </button>
+        )}
+      </div>
+
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        aria-label={isFlipped ? `Answer: ${back}` : `Question: ${front}`}
+        aria-pressed={isFlipped}
+        className="w-full h-80 perspective-1000 cursor-pointer focus-ring rounded-2xl"
+      >
+        <div
+          className={cn(
+            "relative w-full h-80 preserve-3d transition-transform duration-500",
+            isFlipped && "rotate-y-180"
+          )}
+        >
+          {/* Question side */}
+          <div
+            className={cn(
+              "absolute inset-0 backface-hidden glass-card glass-card-hover p-5 md:p-6 rounded-2xl overflow-hidden flex flex-col",
+              !isFlipped && "glow"
+            )}
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-accent-teal/10 to-background/30 opacity-80" />
+            <div className="relative z-10 flex flex-col h-full">
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <CardLabel label="QUESTION" />
+                {category && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface border border-border text-muted">
+                    {category}
+                  </span>
+                )}
+                {difficulty && (
+                  <Badge variant={difficultyVariant[difficulty]} className="text-[10px]">
+                    {difficulty}
+                  </Badge>
+                )}
+              </div>
+              <p className="text-foreground text-center font-semibold text-base leading-relaxed px-1 flex-1 flex items-center justify-center">
+                {front}
+              </p>
+              {showHints && hint && !isFlipped && (
+                <p className="text-primary/80 text-xs text-center mt-2 italic">
+                  Hint: {hint}
+                </p>
+              )}
+              <p className="text-muted text-xs text-center mt-3">
+                Click or press Enter to reveal
+              </p>
             </div>
+          </div>
 
-            {/* Answer Side - Liquid Glass Brand Cyan */}
-            <div className="relative w-full h-72 p-8 rounded-2xl cursor-pointer glass-card glass-card-hover group overflow-hidden"
-                title={back}
-            >
-                {/* Animated gradient background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-[#265973]/30 via-[#CCFFFF]/10 to-[#212D7D]/30 opacity-80"></div>
-                
-                {/* Shimmer effect */}
-                <div className="absolute inset-0 shimmer"></div>
-                
-                {/* Glow effect on hover */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 glow-cyan rounded-2xl"></div>
-                
-                {/* Content */}
-                <div className="relative z-10 flex flex-col justify-center items-center h-full">
-                    <div className="inline-block px-3 py-1 mb-4 rounded-full bg-white/10 backdrop-blur-sm border border-white/20">
-                        <span className="text-xs font-bold text-white/90 tracking-wider">ANSWER</span>
-                    </div>
-                    <div className="text-white text-center font-medium leading-relaxed overflow-y-auto max-h-44 px-2 drop-shadow-lg custom-scrollbar">
-                        {back}
-                    </div>
-                    <div className="mt-6 flex items-center gap-2 text-white/60 text-xs">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                        <span>Click to flip back</span>
-                    </div>
-                </div>
-
-                {/* Decorative elements */}
-                <div className="absolute top-4 left-4 w-20 h-20 bg-[#CCFFFF]/5 rounded-full blur-2xl"></div>
-                <div className="absolute bottom-4 right-4 w-16 h-16 bg-[#265973]/10 rounded-full blur-xl"></div>
+          {/* Answer side */}
+          <div
+            className={cn(
+              "absolute inset-0 backface-hidden rotate-y-180 glass-card glass-card-hover p-5 md:p-6 rounded-2xl overflow-hidden flex flex-col",
+              isFlipped && "glow-cyan"
+            )}
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-accent-teal/20 via-accent-cyan/10 to-background/30 opacity-80" />
+            <div className="relative z-10 flex flex-col h-full">
+              <CardLabel label="ANSWER" />
+              <p className="text-foreground text-center font-medium leading-relaxed overflow-y-auto flex-1 flex items-center justify-center px-1 mt-3">
+                {back}
+              </p>
+              {mnemonic && (
+                <p className="text-info text-xs text-center mt-2 bg-info/10 rounded-lg px-2 py-1">
+                  💡 {mnemonic}
+                </p>
+              )}
+              <p className="text-muted text-xs text-center mt-3">
+                Click or press Enter to flip back
+              </p>
             </div>
-        </ReactCardFlip>
+          </div>
+        </div>
+      </div>
     </div>
-)
+  );
+}
+
+function CardLabel({ label }: { label: string }) {
+  return (
+    <span className="inline-block px-2.5 py-0.5 rounded-full bg-surface border border-border text-[10px] font-bold text-foreground/90 tracking-wider">
+      {label}
+    </span>
+  );
 }

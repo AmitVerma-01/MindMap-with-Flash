@@ -4,6 +4,9 @@ import Link from "next/link";
 import PriceCard from "@/components/PriceCard";
 import HeroSection from "@/components/HeroSection";
 import CTASection from "@/components/CTASection";
+import PageBackground from "@/components/layout/PageBackground";
+import Card from "@/components/ui/Card";
+import Button from "@/components/ui/Button";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -34,16 +37,9 @@ export default function Home() {
 
   return (
    <main className="relative overflow-hidden">
-      {/* Animated liquid background */}
-      <div className="fixed inset-0 bg-gradient-to-br from-[#0f2f45] via-[#265973] to-[#1a4d6d]">
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-0 -left-4 w-96 h-96 bg-[#2B74AB] rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
-          <div className="absolute top-0 -right-4 w-96 h-96 bg-[#265973] rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
-          <div className="absolute -bottom-8 left-20 w-96 h-96 bg-[#CCFFFF] rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000"></div>
-        </div>
-      </div>
+      <PageBackground />
       
-      <div className="relative z-10"> 
+      <div className="relative z-10">
       {/* Hero Section */}
       <HeroSection />
 
@@ -52,20 +48,20 @@ export default function Home() {
         <div className="w-11/12 max-w-6xl">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8" role="list">
             <div className="glass-card p-6 rounded-2xl text-center">
-              <div className="text-4xl md:text-5xl font-bold text-[#CCFFFF] mb-2">10K+</div>
-              <div className="text-gray-300 text-sm md:text-base">Flashcards Created</div>
+              <div className="text-4xl md:text-5xl font-bold text-primary mb-2">10K+</div>
+              <div className="text-muted text-sm md:text-base">Flashcards Created</div>
             </div>
             <div className="glass-card p-6 rounded-2xl text-center">
-              <div className="text-4xl md:text-5xl font-bold text-[#CCFFFF] mb-2">5K+</div>
-              <div className="text-gray-300 text-sm md:text-base">Active Learners</div>
+              <div className="text-4xl md:text-5xl font-bold text-primary mb-2">5K+</div>
+              <div className="text-muted text-sm md:text-base">Active Learners</div>
             </div>
             <div className="glass-card p-6 rounded-2xl text-center">
-              <div className="text-4xl md:text-5xl font-bold text-[#CCFFFF] mb-2">95%</div>
-              <div className="text-gray-300 text-sm md:text-base">Success Rate</div>
+              <div className="text-4xl md:text-5xl font-bold text-primary mb-2">95%</div>
+              <div className="text-muted text-sm md:text-base">Success Rate</div>
             </div>
             <div className="glass-card p-6 rounded-2xl text-center">
-              <div className="text-4xl md:text-5xl font-bold text-[#CCFFFF] mb-2">4.9★</div>
-              <div className="text-gray-300 text-sm md:text-base">User Rating</div>
+              <div className="text-4xl md:text-5xl font-bold text-primary mb-2">4.9★</div>
+              <div className="text-muted text-sm md:text-base">User Rating</div>
             </div>
           </div>
         </div>
@@ -76,40 +72,40 @@ export default function Home() {
         <div className="w-11/12 max-w-6xl">
           <div className="text-center mb-16">
             <div className="inline-block glass-card px-6 py-2 rounded-full mb-6">
-              <span className="text-sm font-bold text-[#CCFFFF] tracking-wider">⚡ HOW IT WORKS</span>
+              <span className="text-sm font-bold text-primary tracking-wider">⚡ HOW IT WORKS</span>
             </div>
-            <h2 id="how-it-works-heading" className="text-4xl md:text-5xl font-bold text-white mb-6 drop-shadow-lg">
-              Create Flashcards in <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#2B74AB] to-[#CCFFFF]">3 Simple Steps</span>
+            <h2 id="how-it-works-heading" className="text-4xl md:text-5xl font-bold text-foreground mb-6 drop-shadow-lg">
+              Create Flashcards in <span className="text-transparent bg-clip-text bg-primary-gradient">3 Simple Steps</span>
             </h2>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
             <div className="glass-card glass-card-hover p-8 rounded-2xl text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-[#2B74AB] to-[#265973] rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-3xl font-bold text-white">1</span>
+              <div className="w-16 h-16 bg-primary-gradient rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-3xl font-bold text-foreground">1</span>
               </div>
-              <h3 className="text-2xl font-bold text-white mb-4">Enter Your Topic</h3>
-              <p className="text-gray-300">
+              <h3 className="text-2xl font-bold text-foreground mb-4">Enter Your Topic</h3>
+              <p className="text-muted">
                 Simply type in any subject, concept, or question you want to learn about.
               </p>
             </div>
             
             <div className="glass-card glass-card-hover p-8 rounded-2xl text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-[#2B74AB] to-[#265973] rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-3xl font-bold text-white">2</span>
+              <div className="w-16 h-16 bg-primary-gradient rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-3xl font-bold text-foreground">2</span>
               </div>
-              <h3 className="text-2xl font-bold text-white mb-4">AI Generates Cards</h3>
-              <p className="text-gray-300">
+              <h3 className="text-2xl font-bold text-foreground mb-4">AI Generates Cards</h3>
+              <p className="text-muted">
                 Our advanced AI creates comprehensive flashcards with questions and answers instantly.
               </p>
             </div>
             
             <div className="glass-card glass-card-hover p-8 rounded-2xl text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-[#2B74AB] to-[#265973] rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-3xl font-bold text-white">3</span>
+              <div className="w-16 h-16 bg-primary-gradient rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-3xl font-bold text-foreground">3</span>
               </div>
-              <h3 className="text-2xl font-bold text-white mb-4">Study & Master</h3>
-              <p className="text-gray-300">
+              <h3 className="text-2xl font-bold text-foreground mb-4">Study & Master</h3>
+              <p className="text-muted">
                 Review your flashcards, track progress, and master any subject efficiently.
               </p>
             </div>
@@ -122,12 +118,12 @@ export default function Home() {
          <div className="w-11/12 md:w-4/5 flex flex-col gap-y-12">
             <div className="text-center">
                 <div className="inline-block glass-card px-6 py-2 rounded-full mb-6">
-                  <span className="text-sm font-bold text-[#CCFFFF] tracking-wider">🚀 POWERFUL FEATURES</span>
+                  <span className="text-sm font-bold text-primary tracking-wider">🚀 POWERFUL FEATURES</span>
                 </div>
-                <h2 id="features-heading" className="text-4xl md:text-5xl font-bold text-white mb-6 drop-shadow-lg">
-                  Everything You Need to <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#2B74AB] to-[#CCFFFF]">Learn Better</span>
+                <h2 id="features-heading" className="text-4xl md:text-5xl font-bold text-foreground mb-6 drop-shadow-lg">
+                  Everything You Need to <span className="text-transparent bg-clip-text bg-primary-gradient">Learn Better</span>
                 </h2>
-                <p className="text-gray-300 text-lg md:text-xl max-w-3xl mx-auto">
+                <p className="text-muted text-lg md:text-xl max-w-3xl mx-auto">
                   MindMapWithFlash combines the power of AI-generated summaries, spaced repetition, and visual mind mapping to help you learn and retain information more effectively.
                 </p>
             </div>
@@ -149,12 +145,12 @@ export default function Home() {
         <div className="w-11/12 max-w-6xl">
           <div className="flex items-center flex-col gap-y-6 text-center mb-16">
             <div className="glass-card px-6 py-2 rounded-full">
-              <span className="text-sm font-bold text-[#CCFFFF] tracking-wider">💎 SIMPLE PRICING</span>
+              <span className="text-sm font-bold text-primary tracking-wider">💎 SIMPLE PRICING</span>
             </div>
-            <h2 id="pricing-heading" className="text-white text-4xl md:text-5xl font-bold drop-shadow-lg">
-              Start Free, <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#2B74AB] to-[#CCFFFF]">Upgrade Anytime</span>
+            <h2 id="pricing-heading" className="text-foreground text-4xl md:text-5xl font-bold drop-shadow-lg">
+              Start Free, <span className="text-transparent bg-clip-text bg-primary-gradient">Upgrade Anytime</span>
             </h2>
-            <p className="text-gray-300 text-lg md:text-xl max-w-2xl">
+            <p className="text-muted text-lg md:text-xl max-w-2xl">
               Choose the plan that best fits your learning needs. All plans include AI-powered flashcard generation.
             </p>
           </div>
@@ -162,29 +158,43 @@ export default function Home() {
           <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-10">
             {/* Free Plan */}
             <div className="glass-card glass-card-hover p-6 rounded-2xl">
-              <PriceCard plan={false} activated={true}/>
+              <PriceCard
+                name="Starter"
+                description="Perfect for trying out"
+                price={0}
+                monthlyCredits={50}
+                activated
+              />
             </div>
             
             {/* Pro Plan */}
-            <div className="glass-card glass-card-hover p-6 rounded-2xl border-2 border-[#CCFFFF]/30 relative">
+            <div className="glass-card glass-card-hover p-6 rounded-2xl border-2 border-primary/30 relative">
               {/* Popular Badge */}
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <div className="bg-gradient-to-r from-[#2B74AB] to-[#265973] px-4 py-1.5 rounded-full shadow-lg">
-                  <span className="text-xs font-bold text-white">⭐ RECOMMENDED</span>
+                <div className="bg-primary-gradient px-4 py-1.5 rounded-full shadow-lg">
+                  <span className="text-xs font-bold text-foreground">⭐ RECOMMENDED</span>
                 </div>
               </div>
-              <PriceCard plan={true} activated={false}/>
+              <PriceCard
+                name="Professional"
+                description="For serious learners"
+                price={5}
+                monthlyCredits={300}
+                popular
+                disabled
+                selectable={false}
+              />
             </div>
           </div>
           
           <div className="text-center">
             <Link href="/pricing" className="inline-block group relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-[#2B74AB] to-[#265973] rounded-xl opacity-10"></div>
-              <div className="relative glass-button px-8 py-4 rounded-xl font-bold text-white transition-transform group-hover:scale-105">
+              <div className="absolute inset-0 bg-primary-gradient rounded-xl opacity-10"></div>
+              <div className="relative glass-button px-8 py-4 rounded-xl font-bold text-foreground transition-transform group-hover:scale-105">
                 View Detailed Pricing →
               </div>
             </Link>
-            <p className="text-gray-400 text-sm mt-4">
+            <p className="text-muted text-sm mt-4">
               All plans include 14-day money-back guarantee
             </p>
           </div>
@@ -195,10 +205,10 @@ export default function Home() {
         <div className="w-11/12 max-w-6xl">
           <div className="text-center mb-16">
             <div className="inline-block glass-card px-6 py-2 rounded-full mb-6">
-              <span className="text-sm font-bold text-[#CCFFFF] tracking-wider">💬 TESTIMONIALS</span>
+              <span className="text-sm font-bold text-primary tracking-wider">💬 TESTIMONIALS</span>
             </div>
-            <h2 id="testimonials-heading" className="text-4xl md:text-5xl font-bold text-white mb-6 drop-shadow-lg">
-              Loved by <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#2B74AB] to-[#CCFFFF]">Students</span> Worldwide
+            <h2 id="testimonials-heading" className="text-4xl md:text-5xl font-bold text-foreground mb-6 drop-shadow-lg">
+              Loved by <span className="text-transparent bg-clip-text bg-primary-gradient">Students</span> Worldwide
             </h2>
           </div>
           
@@ -211,16 +221,16 @@ export default function Home() {
                   </svg>
                 ))}
               </div>
-              <p className="text-gray-300 mb-4">
+              <p className="text-muted mb-4">
                 &quot;This app completely changed how I study. I went from struggling to acing my exams!&quot;
               </p>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-[#2B74AB] to-[#265973] rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold">SM</span>
+                <div className="w-10 h-10 bg-primary-gradient rounded-full flex items-center justify-center">
+                  <span className="text-foreground font-bold">SM</span>
                 </div>
                 <div>
-                  <div className="text-white font-semibold">Sarah M.</div>
-                  <div className="text-gray-400 text-sm">Medical Student</div>
+                  <div className="text-foreground font-semibold">Sarah M.</div>
+                  <div className="text-muted text-sm">Medical Student</div>
                 </div>
               </div>
             </div>
@@ -233,16 +243,16 @@ export default function Home() {
                   </svg>
                 ))}
               </div>
-              <p className="text-gray-300 mb-4">
+              <p className="text-muted mb-4">
                 &quot;The AI-generated flashcards are incredibly accurate. Saves me hours of manual work!&quot;
               </p>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-[#2B74AB] to-[#265973] rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold">JD</span>
+                <div className="w-10 h-10 bg-primary-gradient rounded-full flex items-center justify-center">
+                  <span className="text-foreground font-bold">JD</span>
                 </div>
                 <div>
-                  <div className="text-white font-semibold">James D.</div>
-                  <div className="text-gray-400 text-sm">Software Engineer</div>
+                  <div className="text-foreground font-semibold">James D.</div>
+                  <div className="text-muted text-sm">Software Engineer</div>
                 </div>
               </div>
             </div>
@@ -255,16 +265,16 @@ export default function Home() {
                   </svg>
                 ))}
               </div>
-              <p className="text-gray-300 mb-4">
+              <p className="text-muted mb-4">
                 &quot;Best study tool I&apos;ve ever used. My grades improved significantly in just one semester!&quot;
               </p>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-[#2B74AB] to-[#265973] rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold">EL</span>
+                <div className="w-10 h-10 bg-primary-gradient rounded-full flex items-center justify-center">
+                  <span className="text-foreground font-bold">EL</span>
                 </div>
                 <div>
-                  <div className="text-white font-semibold">Emily L.</div>
-                  <div className="text-gray-400 text-sm">Law Student</div>
+                  <div className="text-foreground font-semibold">Emily L.</div>
+                  <div className="text-muted text-sm">Law Student</div>
                 </div>
               </div>
             </div>

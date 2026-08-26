@@ -5,8 +5,9 @@ import { ClerkProvider } from "@clerk/nextjs";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import StructuredData from "@/components/StructuredData";
+import { clerkAppearance } from "@/lib/clerk-appearance";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], display: "swap" });
 
 export const metadata: Metadata = {
   title: {
@@ -79,21 +80,20 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    google: 'your-google-verification-code',
-    // yandex: 'your-yandex-verification-code',
-    // bing: 'your-bing-verification-code',
+    ...(process.env.GOOGLE_SITE_VERIFICATION && {
+      google: process.env.GOOGLE_SITE_VERIFICATION,
+    }),
   },
   icons: {
     icon: [
-      { url: '/icon.png', sizes: '32x32', type: 'image/png' },
-      { url: '/icon.png', sizes: '192x192', type: 'image/png' },
+      { url: '/logo.png', sizes: '32x32', type: 'image/png' },
+      { url: '/logo.png', sizes: '192x192', type: 'image/png' },
     ],
     apple: [
-      { url: '/apple-icon.png', sizes: '180x180', type: 'image/png' },
+      { url: '/logo2.png', sizes: '180x180', type: 'image/png' },
     ],
-    shortcut: '/icon.png',
+    shortcut: '/logo.png',
   },
-  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
@@ -102,10 +102,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider appearance={clerkAppearance}>
       <html lang="en">
         <head>
-          <meta name="theme-color" content="#2B74AB" />
+          <meta name="theme-color" content="#E8841A" />
           <StructuredData />
         </head>
         <body className={inter.className}>

@@ -1,18 +1,8 @@
 import { prisma } from "@/lib/prisma";
+import { getPlanMonthlyCredits } from "@/lib/plans-db";
+import { PLAN_LIMITS, type PlanSlug } from "@/lib/plans";
 
-// Plan configurations
-export const PLAN_LIMITS = {
-  free: {
-    name: "Free",
-    monthlyCredits: 50,
-    price: 0,
-  },
-  pro: {
-    name: "Pro",
-    monthlyCredits: 300,
-    price: 5,
-  },
-} as const;
+export { PLAN_LIMITS };
 
 // Get the start of the current month
 export function getMonthStart(): Date {
@@ -34,13 +24,13 @@ export async function needsPlanSelection(userId: string): Promise<boolean> {
 export async function initializeUserPlan(
   userId: string,
   email: string,
-  plan: "free" | "pro"
+  plan: PlanSlug
 ): Promise<void> {
   const monthStart = getMonthStart();
   const monthEnd = new Date(monthStart);
   monthEnd.setMonth(monthEnd.getMonth() + 1);
 
-  const credits = PLAN_LIMITS[plan].monthlyCredits;
+  const credits = await getPlanMonthlyCredits(plan);
 
   await prisma.user.upsert({
     where: { clerkId: userId },
@@ -92,7 +82,6 @@ export async function checkCredits(
       };
     }
 
-    const now = new Date();
     const monthStart = getMonthStart();
 
     // Check if we need to reset credits for new month
@@ -101,7 +90,7 @@ export async function checkCredits(
       user.currentPeriodStart < monthStart
     ) {
       // Reset credits for new month
-      const credits = PLAN_LIMITS[user.plan as keyof typeof PLAN_LIMITS].monthlyCredits;
+      const credits = await getPlanMonthlyCredits(user.plan);
       const monthEnd = new Date(monthStart);
       monthEnd.setMonth(monthEnd.getMonth() + 1);
 
@@ -222,14 +211,27 @@ export async function getUserCredits(userId: string): Promise<{
       !user.currentPeriodStart ||
       user.currentPeriodStart < monthStart
     ) {
-      const credits = PLAN_LIMITS[user.plan as keyof typeof PLAN_LIMITS].monthlyCredits;
+      const credits = await getPlanMonthlyCredits(user.plan);
+      const monthEnd = new Date(monthStart);
+      monthEnd.setMonth(monthEnd.getMonth() + 1);
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          currentPeriodStart: monthStart,
+          currentPeriodEnd: monthEnd,
+          monthlyCredits: credits,
+          creditsUsed: 0,
+        },
+      });
+
       return {
         creditsUsed: 0,
         monthlyCredits: credits,
         remaining: credits,
         plan: user.plan,
         needsPlanSelection: false,
-        currentPeriodEnd: user.currentPeriodEnd,
+        currentPeriodEnd: monthEnd,
       };
     }
 

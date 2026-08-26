@@ -2,33 +2,44 @@
   "name": "mindmapwithflash",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run db:generate && next build --webpack",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "prisma db seed",
+    "db:push": "prisma db push",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@clerk/clerk-react": "^5.4.1",
-    "@clerk/nextjs": "^5.3.1",
-    "@prisma/client": "^6.19.0",
+    "@clerk/nextjs": "^6.36.0",
+    "@next/swc-darwin-arm64": "^16.3.3",
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "^7.10.0",
     "axios": "^1.7.4",
-    "next": "14.2.5",
+    "dotenv": "^17.4.2",
+    "next": "^16.0.0",
     "openai": "^4.56.0",
-    "prisma": "^6.19.0",
-    "react": "^18",
-    "react-card-flip": "^1.2.3",
-    "react-dom": "^18",
-    "swr": "^2.2.5"
+    "pg": "^8.23.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "eslint": "^8",
-    "eslint-config-next": "14.2.5",
+    "@types/pg": "^8.23.1",
+    "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^9",
+    "eslint-config-next": "^16.0.0",
     "postcss": "^8",
+    "prisma": "^7.10.0",
     "tailwindcss": "^3.4.1",
+    "tsx": "^4.23.12",
     "typescript": "^5"
   }
 }

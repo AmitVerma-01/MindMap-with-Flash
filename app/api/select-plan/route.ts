@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { initializeUserPlan, PLAN_LIMITS } from "@/lib/credits";
+import { isPlanSelectable } from "@/lib/plans-db";
+import { isPlanSlug } from "@/lib/plans";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,14 +19,22 @@ export async function POST(req: NextRequest) {
 
     const { plan } = await req.json();
 
-    if (!plan || (plan !== "free" && plan !== "pro")) {
+    if (!plan || !isPlanSlug(plan)) {
       return NextResponse.json(
         { error: "Invalid plan. Must be 'free' or 'pro'" },
         { status: 400 }
       );
     }
 
-    const selectedPlan = plan as "free" | "pro";
+    const selectable = await isPlanSelectable(plan);
+    if (!selectable) {
+      return NextResponse.json(
+        { error: "This plan is not available yet" },
+        { status: 400 }
+      );
+    }
+
+    const selectedPlan = plan;
 
     // Get user email from Clerk
     const clerkUser = await currentUser();

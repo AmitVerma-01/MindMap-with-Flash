@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 // GET all flashcard sets for the authenticated user
 export async function GET() {
   try {
@@ -86,10 +88,23 @@ export async function POST(req: NextRequest) {
         topic,
         userId: user.id,
         flashcards: {
-          create: flashcards.map((card: { front: string; back: string }) => ({
-            front: card.front,
-            back: card.back,
-          })),
+          create: flashcards.map(
+            (card: {
+              front: string;
+              back: string;
+              hint?: string;
+              mnemonic?: string;
+              category?: string;
+              difficulty?: string;
+            }) => ({
+              front: card.front,
+              back: card.back,
+              hint: card.hint ?? null,
+              mnemonic: card.mnemonic ?? null,
+              category: card.category ?? null,
+              difficulty: card.difficulty ?? null,
+            })
+          ),
         },
       },
       include: {

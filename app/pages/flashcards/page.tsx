@@ -1,413 +1,604 @@
-'use client'
+"use client";
 
-import Flashcard from "@/components/flashcard"
-import Spinner from "@/components/spinner"
-import { useUser } from "@clerk/nextjs"
-import axios from "axios"
-import { useState, useEffect } from "react"
-import type { Flashcard as FlashcardType } from "@/types/flashcard"
-import { useRouter } from "next/navigation"
-import { useToast } from "@/hooks/useToast"
-import Link from "next/link"
+import Flashcard from "@/components/flashcard";
+import Spinner from "@/components/spinner";
+import axios from "axios";
+import { useState, useEffect } from "react";
+import type {
+  Flashcard as FlashcardType,
+  FlashcardDifficulty,
+} from "@/types/flashcard";
+import {
+  CARD_COUNT_OPTIONS,
+  DIFFICULTY_OPTIONS,
+} from "@/types/flashcard";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/useToast";
+import Link from "next/link";
+import PageBackground from "@/components/layout/PageBackground";
+import PageHeader from "@/components/layout/PageHeader";
+import Card from "@/components/ui/Card";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
+import Modal from "@/components/ui/Modal";
+import { getModelDisplayName } from "@/lib/ai/models";
+import { shuffleFlashcards } from "@/lib/flashcard-utils";
+import {
+  downloadTextFile,
+  flashcardsToCsv,
+} from "@/lib/export-utils";
 
 interface UsageStats {
-    cardsThisWeek: number;
-    limit: number;
-    remaining: number;
-    plan: string;
-    isPro: boolean;
+  cardsThisWeek: number;
+  limit: number;
+  remaining: number;
+  plan: string;
+  isPro: boolean;
 }
 
 export default function Flashcards() {
-    const { user, isLoaded } = useUser()
-    const router = useRouter()
-    const toast = useToast()
-    const [loading, setLoading] = useState<boolean>(false)
-    const [saving, setSaving] = useState<boolean>(false)
-    const [flashcards, setFlashcards] = useState<FlashcardType[]>([])
-    const [topic, setTopic] = useState<string>('')
-    const [flippedIndex, setFlippedIndex] = useState<number | null>(null)
-    const [showSaveModal, setShowSaveModal] = useState<boolean>(false)
-    const [setTitle, setSetTitle] = useState<string>('')
-    const [usageStats, setUsageStats] = useState<UsageStats | null>(null)
+  const router = useRouter();
+  const toast = useToast();
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [flashcards, setFlashcards] = useState<FlashcardType[]>([]);
+  const [topic, setTopic] = useState("");
+  const [extra, setExtra] = useState("");
+  const [difficulty, setDifficulty] = useState<FlashcardDifficulty>("intermediate");
+  const [cardCount, setCardCount] = useState<number>(8);
+  const [flippedIndex, setFlippedIndex] = useState<number | null>(null);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [setTitle, setSetTitle] = useState("");
+  const [usageStats, setUsageStats] = useState<UsageStats | null>(null);
+  const [lastModel, setLastModel] = useState<string | null>(null);
+  const [showHints, setShowHints] = useState(true);
+  const [regeneratingIndex, setRegeneratingIndex] = useState<number | null>(null);
 
-    useEffect(() => {
-        if (isLoaded && user) {
-            fetchUsageStats()
+  useEffect(() => {
+    let active = true;
+
+    axios
+      .get("/api/credits")
+      .then((response) => {
+        if (!active) return;
+        if (response.data.needsPlanSelection) {
+          toast.warning("Please select a plan to start generating flashcards");
+          setTimeout(() => router.push("/pricing"), 1500);
+          return;
         }
+        setUsageStats({
+          cardsThisWeek: response.data.creditsUsed,
+          limit: response.data.monthlyCredits,
+          remaining: response.data.remaining,
+          plan: response.data.plan,
+          isPro: response.data.plan === "pro",
+        });
+      })
+      .catch((error) => {
+        console.error("Error fetching credit stats:", error);
+      });
+
+    return () => {
+      active = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user, isLoaded])
+  }, []);
 
-    const fetchUsageStats = async () => {
-        try {
-            const response = await axios.get('/api/credits')
-            if (response.data.needsPlanSelection) {
-                // Redirect to pricing if no plan selected
-                toast.warning("Please select a plan to start generating flashcards");
-                setTimeout(() => router.push('/pricing'), 1500);
-                return;
-            }
-            setUsageStats({
-                cardsThisWeek: response.data.creditsUsed,
-                limit: response.data.monthlyCredits,
-                remaining: response.data.remaining,
-                plan: response.data.plan,
-                isPro: response.data.plan === 'pro'
-            })
-        } catch (error) {
-            console.error("Error fetching credit stats:", error)
-        }
+  const handleGenerate = async (e: React.FormEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+
+    if (!topic.trim()) {
+      toast.warning("Please enter a topic or question");
+      return;
     }
 
-    const handleGenerate = async (e: React.FormEvent<HTMLButtonElement>) => {
-        e.preventDefault()
-        
-        if (!user) {
-            toast.warning("Please sign in to generate flashcards");
-            router.push('/sign-in');
-            return;
-        }
-        
-        if (!topic.trim()) {
-            toast.warning("Please enter a topic or question");
-            return;
-        }
-
-        setLoading(true)
-        try {
-            const response = await axios.post('/api/flashcard', {
-                topic: topic
-            })
-            
-            if (response.data.error) {
-                throw new Error(response.data.error);
-            }
-            
-            setFlashcards(response.data.flashcard)
-            setFlippedIndex(null)
-            
-            // Update credit stats
-            if (response.data.credits) {
-                setUsageStats({
-                    cardsThisWeek: response.data.credits.limit - response.data.credits.remaining,
-                    limit: response.data.credits.limit,
-                    remaining: response.data.credits.remaining,
-                    plan: response.data.credits.plan,
-                    isPro: response.data.credits.plan === 'pro'
-                })
-            }
-            
-            toast.success(`Generated ${response.data.flashcard.length} flashcards!`);
-        } catch (error: any) {
-            console.error("Error generating flashcards:", error);
-            
-            if (error.response?.status === 401) {
-                toast.error("Please sign in to generate flashcards");
-                router.push('/sign-in');
-            } else if (error.response?.status === 402) {
-                // User needs to select a plan
-                const errorData = error.response.data;
-                toast.error(errorData.error || "Please select a plan to continue");
-                setTimeout(() => router.push('/pricing'), 1500);
-            } else if (error.response?.status === 403) {
-                const errorData = error.response.data;
-                toast.error(errorData.error || "Insufficient credits");
-                
-                // Update credit stats from error response
-                if (errorData.remaining !== undefined) {
-                    setUsageStats({
-                        cardsThisWeek: errorData.limit - errorData.remaining,
-                        limit: errorData.limit,
-                        remaining: errorData.remaining,
-                        plan: errorData.plan,
-                        isPro: false
-                    })
-                }
-            } else {
-                toast.error(error.response?.data?.error || "Failed to generate flashcards. Please try again.");
-            }
-        } finally {
-            setLoading(false)
-        }
+    if (usageStats && usageStats.remaining < cardCount && !usageStats.isPro) {
+      toast.warning(`You need ${cardCount} credits but only have ${usageStats.remaining} remaining`);
+      return;
     }
 
-    const handleSave = async () => {
-        if (!user) {
-            toast.warning("Please sign in to save flashcards");
-            return;
-        }
+    setLoading(true);
+    setLastModel(null);
 
-        if (!setTitle.trim()) {
-            toast.warning("Please enter a title for your flashcard set");
-            return;
-        }
+    try {
+      const response = await axios.post("/api/flashcard", {
+        topic,
+        level: difficulty,
+        extra: extra.trim() || undefined,
+        counts: cardCount,
+      });
 
-        setSaving(true)
-        try {
-            await axios.post('/api/flashcard-sets', {
-                title: setTitle,
-                topic: topic,
-                flashcards: flashcards
-            })
-            
-            setShowSaveModal(false)
-            setSetTitle('')
-            toast.success("Flashcards saved successfully!");
-            setTimeout(() => router.push('/dashboard'), 1000);
-        } catch (error) {
-            console.error("Error saving flashcards:", error);
-            toast.error("Failed to save flashcards. Please try again.");
-        } finally {
-            setSaving(false)
+      if (response.data.error) {
+        throw new Error(response.data.error);
+      }
+
+      setFlashcards(response.data.flashcard);
+      setFlippedIndex(null);
+      setLastModel(response.data.model ?? null);
+
+      if (response.data.credits) {
+        setUsageStats({
+          cardsThisWeek:
+            response.data.credits.limit - response.data.credits.remaining,
+          limit: response.data.credits.limit,
+          remaining: response.data.credits.remaining,
+          plan: response.data.credits.plan,
+          isPro: response.data.credits.plan === "pro",
+        });
+      }
+
+      const modelNote = response.data.model
+        ? ` (via ${getModelDisplayName(response.data.model)})`
+        : "";
+      toast.success(
+        `Generated ${response.data.flashcard.length} flashcards!${modelNote}`
+      );
+    } catch (error: unknown) {
+      console.error("Error generating flashcards:", error);
+      const axiosError = error as {
+        response?: {
+          status?: number;
+          data?: {
+            error?: string;
+            remaining?: number;
+            limit?: number;
+            plan?: string;
+          };
+        };
+      };
+
+      if (axiosError.response?.status === 401) {
+        toast.error("Please sign in to generate flashcards");
+        router.push("/sign-in");
+      } else if (axiosError.response?.status === 402) {
+        toast.error(
+          axiosError.response.data?.error || "Please select a plan to continue"
+        );
+        setTimeout(() => router.push("/pricing"), 1500);
+      } else if (axiosError.response?.status === 403) {
+        const errorData = axiosError.response.data;
+        toast.error(errorData?.error || "Insufficient credits");
+        if (
+          errorData?.remaining !== undefined &&
+          errorData?.limit !== undefined
+        ) {
+          setUsageStats({
+            cardsThisWeek: errorData.limit - errorData.remaining,
+            limit: errorData.limit,
+            remaining: errorData.remaining,
+            plan: errorData.plan || "free",
+            isPro: false,
+          });
         }
+      } else {
+        toast.error(
+          axiosError.response?.data?.error ||
+            "Failed to generate flashcards. Please try again."
+        );
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!setTitle.trim()) {
+      toast.warning("Please enter a title for your flashcard set");
+      return;
     }
 
-    return (
-        <div className="relative min-h-screen overflow-hidden">
-            {/* Animated liquid background - Brand colors */}
-            <div className="fixed inset-0 bg-gradient-to-br from-[#0f2f45] via-[#265973] to-[#1a4d6d]">
-                <div className="absolute inset-0 opacity-30">
-                    <div className="absolute top-0 -left-4 w-96 h-96 bg-[#2B74AB] rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
-                    <div className="absolute top-0 -right-4 w-96 h-96 bg-[#265973] rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
-                    <div className="absolute -bottom-8 left-20 w-96 h-96 bg-[#CCFFFF] rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000"></div>
-                </div>
-            </div>
+    setSaving(true);
+    try {
+      await axios.post("/api/flashcard-sets", {
+        title: setTitle,
+        topic,
+        flashcards: flashcards.map(
+          ({ front, back, hint, mnemonic, category, difficulty }) => ({
+            front,
+            back,
+            hint,
+            mnemonic,
+            category,
+            difficulty,
+          })
+        ),
+      });
 
-            <div className="relative z-10 max-w-7xl mx-auto p-6">
-                {/* Header with glass effect */}
-                <div className="text-center mb-12 animate-fade-in">
-                    <div className="inline-block mb-4">
-                        <div className="glass-card px-6 py-2 rounded-full">
-                            <span className="text-sm font-bold text-white/90 tracking-wider">✨ AI-POWERED LEARNING</span>
-                        </div>
+      setShowSaveModal(false);
+      setSetTitle("");
+      toast.success("Flashcards saved successfully!");
+      setTimeout(() => router.push("/dashboard"), 1000);
+    } catch (error) {
+      console.error("Error saving flashcards:", error);
+      toast.error("Failed to save flashcards. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleShuffle = () => {
+    setFlashcards((prev) => shuffleFlashcards(prev));
+    setFlippedIndex(null);
+    toast.info("Cards shuffled");
+  };
+
+  const handleExportCsv = () => {
+    const slug = topic.trim().replace(/\s+/g, "-").toLowerCase() || "flashcards";
+    downloadTextFile(flashcardsToCsv(flashcards), `${slug}.csv`, "text/csv;charset=utf-8");
+    toast.success("Downloaded CSV file");
+  };
+
+  const handleRegenerateCard = async (index: number) => {
+    const card = flashcards[index];
+    if (!topic.trim()) {
+      toast.warning("Topic is required to regenerate a card");
+      return;
+    }
+
+    if (usageStats && usageStats.remaining < 1 && !usageStats.isPro) {
+      toast.warning("You need 1 credit to regenerate a card");
+      return;
+    }
+
+    setRegeneratingIndex(index);
+
+    try {
+      const response = await axios.post("/api/flashcard", {
+        topic,
+        level: difficulty,
+        extra: extra.trim() || undefined,
+        ques: `Create a different flashcard about "${topic}" at ${difficulty} level. Do NOT repeat or closely paraphrase this existing question: "${card.front}"`,
+      });
+
+      if (response.data.error) {
+        throw new Error(response.data.error);
+      }
+
+      const newCard = response.data.flashcard?.[0];
+      if (!newCard) {
+        throw new Error("No card returned from AI");
+      }
+
+      setFlashcards((prev) =>
+        prev.map((c, i) => (i === index ? newCard : c))
+      );
+      setFlippedIndex(null);
+
+      if (response.data.credits) {
+        setUsageStats({
+          cardsThisWeek:
+            response.data.credits.limit - response.data.credits.remaining,
+          limit: response.data.credits.limit,
+          remaining: response.data.credits.remaining,
+          plan: response.data.credits.plan,
+          isPro: response.data.credits.plan === "pro",
+        });
+      }
+
+      toast.success("Card regenerated");
+    } catch (error: unknown) {
+      const axiosError = error as {
+        response?: { data?: { error?: string } };
+        message?: string;
+      };
+      toast.error(
+        axiosError.response?.data?.error ||
+          axiosError.message ||
+          "Failed to regenerate card"
+      );
+    } finally {
+      setRegeneratingIndex(null);
+    }
+  };
+
+  const handleExport = async () => {
+    const payload = JSON.stringify({ topic, difficulty, flashcards }, null, 2);
+    try {
+      await navigator.clipboard.writeText(payload);
+      toast.success("Copied deck to clipboard as JSON");
+    } catch {
+      toast.error("Could not copy to clipboard");
+    }
+  };
+
+  const handleDeleteCard = (index: number) => {
+    setFlashcards((prev) => prev.filter((_, i) => i !== index));
+    setFlippedIndex(null);
+  };
+
+  return (
+    <div className="relative min-h-screen overflow-hidden">
+      <PageBackground />
+
+      <div className="relative z-10 max-w-7xl mx-auto p-4 md:p-6">
+        <PageHeader
+          badge="AI-POWERED LEARNING"
+          title="Generate Flashcards"
+          subtitle="Multi-model AI with smart fallbacks — richer cards with hints, categories, and mnemonics"
+        />
+
+        {usageStats && (
+          <div className="w-full flex justify-center mb-6">
+            <Card className="w-full max-w-3xl">
+              {usageStats.isPro ? (
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-foreground font-bold text-sm">
+                      Pro Plan Active
+                    </p>
+                    <p className="text-muted text-xs">
+                      {usageStats.cardsThisWeek} cards generated this month
+                    </p>
+                  </div>
+                  <span className="px-3 py-1 rounded-full bg-primary-gradient text-xs font-bold text-white">
+                    UNLIMITED
+                  </span>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <p className="text-foreground font-bold text-sm">
+                        Free Plan
+                      </p>
+                      <p className="text-muted text-xs">
+                        {usageStats.remaining} of {usageStats.limit} credits
+                        remaining this month
+                      </p>
                     </div>
-                    <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 drop-shadow-2xl">
-                        Generate <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#2B74AB] via-[#CCFFFF] to-[#265973]">Flashcards</span>
-                    </h1>
-                    <p className="text-gray-300 text-lg">Transform any topic into interactive learning cards</p>
+                    <Link href="/pricing">
+                      <Button size="sm">Upgrade to Pro</Button>
+                    </Link>
+                  </div>
+                  <div className="w-full bg-surface rounded-full h-2 overflow-hidden">
+                    <div
+                      className="h-2 rounded-full bg-primary-gradient transition-all duration-500"
+                      style={{
+                        width: `${(usageStats.remaining / usageStats.limit) * 100}%`,
+                      }}
+                    />
+                  </div>
+                </>
+              )}
+            </Card>
+          </div>
+        )}
+
+        <div className="w-full flex justify-center mb-8 md:mb-12">
+          <form className="w-full max-w-3xl" onSubmit={(e) => e.preventDefault()}>
+            <Card padding="lg" className="space-y-4">
+              <Input
+                label="Topic"
+                type="text"
+                placeholder="e.g. React Hooks, World War II, Organic Chemistry"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                disabled={loading}
+                required
+              />
+
+              <div>
+                <label
+                  htmlFor="extra-context"
+                  className="block text-sm font-medium text-foreground mb-2"
+                >
+                  Focus areas (optional)
+                </label>
+                <textarea
+                  id="extra-context"
+                  placeholder="e.g. Focus on useEffect and useMemo, exam-style questions..."
+                  value={extra}
+                  onChange={(e) => setExtra(e.target.value)}
+                  disabled={loading}
+                  rows={2}
+                  className="w-full p-3 rounded-xl text-sm bg-surface text-foreground placeholder:text-muted border border-border focus:border-primary/50 focus:ring-2 focus:ring-primary/30 focus:outline-none resize-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Difficulty
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {DIFFICULTY_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        disabled={loading}
+                        onClick={() => setDifficulty(opt.value)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors focus-ring ${
+                          difficulty === opt.value
+                            ? "bg-primary/20 border-primary text-primary"
+                            : "bg-surface border-border text-muted hover:border-primary/40"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
-                {/* Usage Stats Banner */}
-                {user && usageStats && (
-                    <div className="w-full flex justify-center items-center mb-6">
-                        <div className="w-full max-w-3xl">
-                            {usageStats.isPro ? (
-                                <div className="glass-card p-4 rounded-xl border-2 border-[#CCFFFF]/30">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 rounded-lg bg-gradient-to-r from-[#2B74AB]/20 to-[#265973]/20">
-                                                <svg className="w-5 h-5 text-[#CCFFFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                                                </svg>
-                                            </div>
-                                            <div>
-                                                <p className="text-white font-bold text-sm">Pro Plan Active</p>
-                                                <p className="text-gray-400 text-xs">{usageStats.cardsThisWeek} cards generated this week</p>
-                                            </div>
-                                        </div>
-                                        <div className="px-3 py-1 rounded-full bg-gradient-to-r from-[#2B74AB] to-[#265973]">
-                                            <span className="text-xs font-bold text-white">∞ UNLIMITED</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="glass-card p-4 rounded-xl">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 rounded-lg bg-white/5">
-                                                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                </svg>
-                                            </div>
-                                            <div>
-                                                <p className="text-white font-bold text-sm">Free Plan</p>
-                                                <p className="text-gray-400 text-xs">{usageStats.remaining} of {usageStats.limit} cards remaining this week</p>
-                                            </div>
-                                        </div>
-                                        <Link href="/pricing">
-                                            <button className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#2B74AB] to-[#265973] text-white text-xs font-bold hover:scale-105 transition-transform">
-                                                Upgrade to Pro
-                                            </button>
-                                        </Link>
-                                    </div>
-                                    <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
-                                        <div 
-                                            className="h-2 rounded-full bg-gradient-to-r from-[#2B74AB] to-[#CCFFFF] transition-all duration-500"
-                                            style={{ width: `${(usageStats.remaining / usageStats.limit) * 100}%` }}
-                                        />
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Number of cards
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {CARD_COUNT_OPTIONS.map((count) => (
+                      <button
+                        key={count}
+                        type="button"
+                        disabled={loading}
+                        onClick={() => setCardCount(count)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors focus-ring ${
+                          cardCount === count
+                            ? "bg-primary/20 border-primary text-primary"
+                            : "bg-surface border-border text-muted hover:border-primary/40"
+                        }`}
+                      >
+                        {count}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                onClick={(e) => handleGenerate(e)}
+                disabled={loading}
+                fullWidth
+                size="lg"
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center gap-3">
+                    <Spinner />
+                    Generating with AI fallbacks...
+                  </span>
+                ) : (
+                  `Generate ${cardCount} Flashcards`
                 )}
+              </Button>
 
-                {/* Input Form with liquid glass */}
-                <div className="w-full flex justify-center items-center mb-12">
-                    <form className="w-full max-w-3xl">
-                        <div className="glass-card rounded-2xl p-8 shadow-2xl">
-                            <div className="relative">
-                                <input
-                                    type="text"
-                                    placeholder="Enter your topic... (e.g., 'React Hooks', 'Quantum Physics')"
-                                    required
-                                    value={topic}
-                                    onChange={(e) => setTopic(e.target.value)}
-                                    className="w-full p-5 rounded-xl text-lg bg-white/5 text-white placeholder-gray-400 border border-white/10 focus:border-white/30 focus:ring-2 focus:ring-purple-500/50 focus:outline-none transition-all backdrop-blur-sm"
-                                    disabled={loading}
-                                />
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                </div>
-                            </div>
-                            <button
-                                onClick={(e) => handleGenerate(e)}
-                                disabled={loading}
-                                className="w-full mt-6 relative overflow-hidden group"
-                            >
-                                <div className="absolute inset-0 bg-gradient-to-r from-[#2B74AB] via-[#265973] to-[#0F1438] rounded-xl"></div>
-                                <div className="absolute inset-0 bg-gradient-to-r from-[#2B74AB] via-[#265973] to-[#0F1438] rounded-xl opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500"></div>
-                                <div className="relative px-8 py-4 bg-gradient-to-r from-[#2B74AB] via-[#265973] to-[#0F1438] rounded-xl font-bold text-white text-lg transition-transform group-hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
-                                    {loading ? (
-                                        <span className="flex items-center justify-center gap-3">
-                                            <Spinner /> 
-                                            <span>Generating Magic...</span>
-                                        </span>
-                                    ) : (
-                                        <span className="flex items-center justify-center gap-2">
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                            </svg>
-                                            Generate Flashcards
-                                        </span>
-                                    )}
-                                </div>
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                {/* Flashcards Grid */}
-                {flashcards && flashcards.length > 0 && (
-                    <>
-                        <div className="mb-8 text-center">
-                            <div className="inline-block glass-card px-6 py-3 rounded-full">
-                                <p className="text-white font-semibold">
-                                    ✨ Generated <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#2B74AB] to-[#CCFFFF] font-bold text-xl">{flashcards.length}</span> flashcards
-                                </p>
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-                            {flashcards.map((flashcard, i) => (
-                                <div key={i} className="animate-fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
-                                    <Flashcard
-                                        index={i}
-                                        front={flashcard.front}
-                                        back={flashcard.back}
-                                        flippedIndex={flippedIndex}
-                                        setFlippedIndex={setFlippedIndex}
-                                    />
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Action Buttons with glass effect */}
-                        <div className="flex flex-wrap justify-center items-center gap-4 pb-12">
-                            <button 
-                                className="group relative overflow-hidden"
-                                onClick={() => setShowSaveModal(true)}
-                            >
-                                <div className="absolute inset-0 bg-gradient-to-r from-[#2B74AB] to-[#265973] rounded-xl"></div>
-                                <div className="absolute inset-0 bg-gradient-to-r from-[#2B74AB] to-[#265973] rounded-xl opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500"></div>
-                                <div className="relative glass-card px-8 py-4 rounded-xl font-bold text-white transition-transform group-hover:scale-105 flex items-center gap-2">
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                                    </svg>
-                                    Save Flashcards
-                                </div>
-                            </button>
-                            <button 
-                                className="glass-card glass-card-hover px-8 py-4 rounded-xl font-bold text-white flex items-center gap-2"
-                                onClick={() => {
-                                    setFlashcards([]);
-                                    setTopic('');
-                                    setFlippedIndex(null);
-                                }}
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                                Clear All
-                            </button>
-                        </div>
-                    </>
-                )}
-
-                {/* Empty State with glass effect */}
-                {flashcards.length === 0 && !loading && (
-                    <div className="text-center py-20">
-                        <div className="glass-card inline-block p-12 rounded-3xl">
-                            <div className="text-7xl mb-6 float-animation">📚</div>
-                            <p className="text-white text-xl font-semibold mb-2">Ready to Learn?</p>
-                            <p className="text-gray-400">Enter a topic above to generate your first flashcard set</p>
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            {/* Save Modal with liquid glass */}
-            {showSaveModal && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in">
-                    <div className="glass-card rounded-2xl p-8 max-w-md w-full shadow-2xl">
-                        <div className="text-center mb-6">
-                            <div className="inline-block p-4 rounded-full bg-gradient-to-r from-[#2B74AB]/20 to-[#265973]/20 mb-4">
-                                <svg className="w-8 h-8 text-[#CCFFFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                                </svg>
-                            </div>
-                            <h2 className="text-2xl font-bold text-white mb-2">Save Your Flashcards</h2>
-                            <p className="text-gray-400">Give your set a memorable name</p>
-                        </div>
-                        <input
-                            type="text"
-                            placeholder="e.g., 'JavaScript Fundamentals'"
-                            value={setTitle}
-                            onChange={(e) => setSetTitle(e.target.value)}
-                            className="w-full p-4 rounded-xl bg-white/5 text-white placeholder-gray-400 border border-white/10 focus:border-white/30 focus:ring-2 focus:ring-purple-500/50 focus:outline-none mb-6 backdrop-blur-sm"
-                            autoFocus
-                        />
-                        <div className="flex gap-3">
-                            <button
-                                onClick={handleSave}
-                                disabled={saving}
-                                className="flex-1 relative overflow-hidden group"
-                            >
-                                <div className="absolute inset-0 bg-gradient-to-r from-[#2B74AB] to-[#265973] rounded-xl"></div>
-                                <div className="relative px-6 py-3 font-bold text-white transition-transform group-hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
-                                    {saving ? "Saving..." : "Save"}
-                                </div>
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setShowSaveModal(false)
-                                    setSetTitle('')
-                                }}
-                                disabled={saving}
-                                className="flex-1 glass-button px-6 py-3 font-bold text-white rounded-xl"
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-            
-            {/* Toast Container */}
-            <toast.ToastContainer />
+              <p className="text-muted text-xs text-center">
+                Uses primary model with automatic fallback to Nemotron, Laguna, and GLM
+              </p>
+            </Card>
+          </form>
         </div>
-    )
+
+        {flashcards.length > 0 && (
+          <>
+            <div className="mb-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Card className="inline-block px-4 py-2">
+                <p className="text-foreground font-semibold text-sm">
+                  <span className="text-primary font-bold text-xl">
+                    {flashcards.length}
+                  </span>{" "}
+                  cards ready
+                  {lastModel && (
+                    <span className="text-muted font-normal text-xs ml-2">
+                      via {getModelDisplayName(lastModel)}
+                    </span>
+                  )}
+                </p>
+              </Card>
+
+              <label className="flex items-center gap-2 text-sm text-muted cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showHints}
+                  onChange={(e) => setShowHints(e.target.checked)}
+                  className="rounded border-border text-primary focus:ring-primary"
+                />
+                Show hints
+              </label>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
+              {flashcards.map((card, i) => (
+                <div
+                  key={`${card.front}-${i}`}
+                  className="animate-fade-in"
+                  style={{ animationDelay: `${i * 0.05}s` }}
+                >
+                  <Flashcard
+                    card={card}
+                    index={i}
+                    flippedIndex={flippedIndex}
+                    setFlippedIndex={setFlippedIndex}
+                    showHints={showHints}
+                    onDelete={() => handleDeleteCard(i)}
+                    onRegenerate={() => handleRegenerateCard(i)}
+                    regenerating={regeneratingIndex === i}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-3 pb-12">
+              <Button onClick={() => setShowSaveModal(true)}>
+                Save Flashcards
+              </Button>
+              <Button variant="secondary" onClick={handleShuffle}>
+                Shuffle
+              </Button>
+              <Button variant="secondary" onClick={handleExport}>
+                Copy JSON
+              </Button>
+              <Button variant="secondary" onClick={handleExportCsv}>
+                Export CSV
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setFlashcards([]);
+                  setTopic("");
+                  setExtra("");
+                  setFlippedIndex(null);
+                  setLastModel(null);
+                }}
+              >
+                Clear All
+              </Button>
+            </div>
+          </>
+        )}
+
+        {flashcards.length === 0 && !loading && (
+          <div className="text-center py-12 md:py-20">
+            <Card className="inline-block p-8 md:p-12 max-w-lg">
+              <p className="text-5xl md:text-7xl mb-4">📚</p>
+              <p className="text-foreground text-lg md:text-xl font-semibold mb-2">
+                Ready to Learn?
+              </p>
+              <p className="text-muted text-sm">
+                Pick a topic, difficulty, and card count. Our AI tries multiple
+                free models automatically if one is unavailable.
+              </p>
+            </Card>
+          </div>
+        )}
+      </div>
+
+      <Modal
+        open={showSaveModal}
+        onClose={() => {
+          setShowSaveModal(false);
+          setSetTitle("");
+        }}
+        title="Save Your Flashcards"
+        description="Give your set a memorable name"
+        footer={
+          <div className="flex gap-3 mt-4">
+            <Button fullWidth onClick={handleSave} disabled={saving}>
+              {saving ? "Saving..." : "Save"}
+            </Button>
+            <Button
+              variant="secondary"
+              fullWidth
+              onClick={() => {
+                setShowSaveModal(false);
+                setSetTitle("");
+              }}
+              disabled={saving}
+            >
+              Cancel
+            </Button>
+          </div>
+        }
+      >
+        <Input
+          label="Set title"
+          type="text"
+          placeholder="e.g. JavaScript Fundamentals"
+          value={setTitle}
+          onChange={(e) => setSetTitle(e.target.value)}
+          autoFocus
+        />
+      </Modal>
+
+      <toast.ToastContainer />
+    </div>
+  );
 }
-
-

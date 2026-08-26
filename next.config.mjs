@@ -1,8 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable compression for better performance
-  compress: true,
-  
   // Optimize images
   images: {
     formats: ['image/avif', 'image/webp'],
