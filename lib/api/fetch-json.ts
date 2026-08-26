@@ -9,14 +9,15 @@ export class ApiError extends Error {
   }
 }
 
-export async function postJson<T>(
+async function requestJson<T>(
   url: string,
-  body: unknown
+  method: string,
+  body?: unknown
 ): Promise<T> {
   const response = await fetch(url, {
-    method: "POST",
+    method,
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
   });
 
   const data = await response.json().catch(() => ({}));
@@ -30,4 +31,12 @@ export async function postJson<T>(
   }
 
   return data as T;
+}
+
+export async function postJson<T>(url: string, body: unknown): Promise<T> {
+  return requestJson<T>(url, "POST", body);
+}
+
+export async function patchJson<T>(url: string, body: unknown): Promise<T> {
+  return requestJson<T>(url, "PATCH", body);
 }

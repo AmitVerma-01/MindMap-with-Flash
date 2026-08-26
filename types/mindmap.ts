@@ -1,6 +1,12 @@
+export interface MindMapNodePosition {
+  x: number;
+  y: number;
+}
+
 export interface MindMapTreeNode {
   id: string;
   label: string;
+  position?: MindMapNodePosition;
   children?: MindMapTreeNode[];
 }
 

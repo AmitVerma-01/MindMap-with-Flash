@@ -121,7 +121,12 @@ export default function MindMapViewerClient({
           </div>
         </div>
 
-        <MindMapCanvas tree={mindMap.tree} onNodeSelect={setSelectedNode} />
+        <MindMapCanvas
+          mindMapId={mindMap.id}
+          tree={mindMap.tree}
+          onNodeSelect={setSelectedNode}
+          onSaveError={(message) => toast.error(message)}
+        />
 
         {selectedNode && (
           <Card className="mt-6">

@@ -608,6 +608,39 @@
   .focus-ring {
     @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background;
   }
+
+  /* ── Mind map canvas (React Flow) ─────────────────────────────── */
+  .mindmap-canvas .react-flow__controls {
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  }
+
+  .mindmap-canvas .react-flow__controls-button {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--color-text);
+    border-color: var(--color-border);
+    width: 32px;
+    height: 32px;
+  }
+
+  .mindmap-canvas .react-flow__controls-button:hover {
+    background: rgba(232, 132, 26, 0.18);
+    color: var(--color-primary);
+  }
+
+  .mindmap-canvas .react-flow__controls-button svg {
+    max-width: 14px;
+    max-height: 14px;
+  }
+
+  .mindmap-canvas .mindmap-minimap {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid var(--color-border) !important;
+    border-radius: 0.75rem;
+    overflow: hidden;
+  }
 }
 
 ::-webkit-scrollbar {

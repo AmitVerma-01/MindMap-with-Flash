@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import type { Prisma } from "@/generated/prisma/client";
 import { generateFlashcards } from "@/lib/ai/flashcards";
 import { checkCredits, deductCredits } from "@/lib/credits";
 import { getUserByClerkId } from "@/lib/srs/queue";
@@ -51,6 +52,71 @@ export async function GET(
     console.error("Error fetching mind map:", error);
     return NextResponse.json(
       { error: "Failed to fetch mind map" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { userId: clerkId } = await auth();
+
+    if (!clerkId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const user = await getUserByClerkId(clerkId);
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const { id } = await params;
+    const mindMapSet = await prisma.mindMapSet.findFirst({
+      where: { id, userId: user.id },
+    });
+
+    if (!mindMapSet) {
+      return NextResponse.json({ error: "Mind map not found" }, { status: 404 });
+    }
+
+    const body = await req.json();
+    const { tree } = body as { tree?: MindMapTreeNode };
+
+    if (!tree || typeof tree !== "object" || !tree.id || !tree.label) {
+      return NextResponse.json(
+        { error: "Valid tree is required" },
+        { status: 400 }
+      );
+    }
+
+    const updated = await prisma.mindMapSet.update({
+      where: { id },
+      data: {
+        tree: tree as unknown as Prisma.InputJsonValue,
+      },
+    });
+
+    return NextResponse.json(
+      {
+        mindMapSet: {
+          id: updated.id,
+          title: updated.title,
+          topic: updated.topic,
+          tree: updated.tree,
+          flashcardSetId: updated.flashcardSetId,
+          createdAt: updated.createdAt.toISOString(),
+          updatedAt: updated.updatedAt.toISOString(),
+        },
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error updating mind map:", error);
+    return NextResponse.json(
+      { error: "Failed to update mind map" },
       { status: 500 }
     );
   }
