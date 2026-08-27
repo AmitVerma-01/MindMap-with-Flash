@@ -5,33 +5,33 @@ export interface FeatureItem {
 
 export const featureItems: FeatureItem[] = [
   {
-    heading: "AI-Powered Summaries",
+    heading: "AI-Generated Flashcards",
     details:
-      "Let our AI assistant generate concise summaries of your study materials to help you focus on the key points.",
+      "Enter any topic and get comprehensive question-and-answer flashcards created instantly by AI.",
   },
   {
     heading: "Spaced Repetition",
     details:
-      "Our spaced repetition algorithm ensures you review flashcards at the optimal intervals to maximize long-term retention.",
+      "Review cards at optimal intervals with SRS study mode to maximize long-term retention.",
   },
   {
     heading: "Visual Mind Mapping",
     details:
-      "Easily create and customize mind maps to visually organize your thoughts and ideas, enhancing your understanding.",
+      "Create mind maps from topics or existing decks to visualize how concepts connect.",
   },
   {
-    heading: "Collaborative Decks",
+    heading: "Customizable Difficulty",
     details:
-      "Share your flashcard decks with friends, classmates, or colleagues and learn together.",
+      "Choose beginner, intermediate, or advanced levels and control how many cards to generate.",
   },
   {
-    heading: "Personalized Learning",
+    heading: "Save & Organize Sets",
     details:
-      "MindMapWithFlash adapts to your individual learning style and pace, ensuring you get the most out of your study sessions.",
+      "Save flashcard sets, search your library, duplicate decks, and export to CSV or JSON.",
   },
   {
-    heading: "Cross-Platform Sync",
+    heading: "Self-Grading Study Mode",
     details:
-      "Access your flashcards and mind maps from any device, seamlessly syncing your progress across all your devices.",
+      "Flip cards, rate your recall, and track due and new cards from your dashboard.",
   },
 ];

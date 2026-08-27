@@ -70,6 +70,7 @@ export default function FlashcardsClient({
   const [lastModel, setLastModel] = useState<string | null>(null);
   const [showHints, setShowHints] = useState(true);
   const [regeneratingIndex, setRegeneratingIndex] = useState<number | null>(null);
+  const [saveTitleError, setSaveTitleError] = useState("");
 
   useEffect(() => {
     if (initialUsageStats?.needsPlanSelection) {
@@ -179,10 +180,11 @@ export default function FlashcardsClient({
 
   const handleSave = async () => {
     if (!setTitle.trim()) {
-      toast.warning("Please enter a title for your flashcard set");
+      setSaveTitleError("Please enter a title for your flashcard set");
       return;
     }
 
+    setSaveTitleError("");
     setSaving(true);
     try {
       const result = await saveFlashcardSet({
@@ -339,11 +341,18 @@ export default function FlashcardsClient({
                         remaining this month
                       </p>
                     </div>
-                    <Link href="/pricing">
-                      <Button size="sm">Upgrade to Pro</Button>
-                    </Link>
+                    <Button asChild size="sm">
+                      <Link href="/pricing">Upgrade to Pro</Link>
+                    </Button>
                   </div>
-                  <div className="w-full bg-surface rounded-full h-2 overflow-hidden">
+                  <div
+                    className="w-full bg-surface rounded-full h-2 overflow-hidden"
+                    role="progressbar"
+                    aria-valuenow={usageStats.remaining}
+                    aria-valuemin={0}
+                    aria-valuemax={usageStats.limit}
+                    aria-label={`${usageStats.remaining} of ${usageStats.limit} credits remaining`}
+                  >
                     <div
                       className="h-2 rounded-full bg-primary-gradient transition-all duration-500"
                       style={{
@@ -390,16 +399,17 @@ export default function FlashcardsClient({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
+                  <span id="difficulty-label" className="block text-sm font-medium text-foreground mb-2">
                     Difficulty
-                  </label>
-                  <div className="flex flex-wrap gap-2">
+                  </span>
+                  <div className="flex flex-wrap gap-2" role="group" aria-labelledby="difficulty-label">
                     {DIFFICULTY_OPTIONS.map((opt) => (
                       <button
                         key={opt.value}
                         type="button"
                         disabled={loading}
                         onClick={() => setDifficulty(opt.value)}
+                        aria-pressed={difficulty === opt.value}
                         className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors focus-ring ${
                           difficulty === opt.value
                             ? "bg-primary/20 border-primary text-primary"
@@ -413,16 +423,17 @@ export default function FlashcardsClient({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
+                  <span id="card-count-label" className="block text-sm font-medium text-foreground mb-2">
                     Number of cards
-                  </label>
-                  <div className="flex flex-wrap gap-2">
+                  </span>
+                  <div className="flex flex-wrap gap-2" role="group" aria-labelledby="card-count-label">
                     {CARD_COUNT_OPTIONS.map((count) => (
                       <button
                         key={count}
                         type="button"
                         disabled={loading}
                         onClick={() => setCardCount(count)}
+                        aria-pressed={cardCount === count}
                         className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors focus-ring ${
                           cardCount === count
                             ? "bg-primary/20 border-primary text-primary"
@@ -552,6 +563,7 @@ export default function FlashcardsClient({
         onClose={() => {
           setShowSaveModal(false);
           setSetTitle("");
+          setSaveTitleError("");
         }}
         title="Save Your Flashcards"
         description="Give your set a memorable name"
@@ -566,6 +578,7 @@ export default function FlashcardsClient({
               onClick={() => {
                 setShowSaveModal(false);
                 setSetTitle("");
+                setSaveTitleError("");
               }}
               disabled={saving}
             >
@@ -579,7 +592,11 @@ export default function FlashcardsClient({
           type="text"
           placeholder="e.g. JavaScript Fundamentals"
           value={setTitle}
-          onChange={(e) => setSetTitle(e.target.value)}
+          onChange={(e) => {
+            setSetTitle(e.target.value);
+            if (saveTitleError) setSaveTitleError("");
+          }}
+          error={saveTitleError}
           autoFocus
         />
       </Modal>

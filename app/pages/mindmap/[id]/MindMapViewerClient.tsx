@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/useToast";
 import PageBackground from "@/components/layout/PageBackground";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import { ConfirmModal } from "@/components/ui/Modal";
 import { deleteMindMapSet } from "@/app/actions/mindmap";
 import { LoadingScreen, PageLoading } from "@/components/LoadingLottie";
 import { ApiError, postJson } from "@/lib/api/fetch-json";
@@ -39,6 +40,7 @@ export default function MindMapViewerClient({
   );
   const [generatingCards, setGeneratingCards] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const handleGenerateFlashcards = async () => {
     if (!selectedNode || selectedNode.id === "root") {
@@ -70,7 +72,6 @@ export default function MindMapViewerClient({
   };
 
   const handleDelete = async () => {
-    if (!confirm("Delete this mind map? This cannot be undone.")) return;
     setDeleting(true);
     try {
       const result = await deleteMindMapSet(mindMap.id);
@@ -84,6 +85,7 @@ export default function MindMapViewerClient({
       toast.error("Failed to delete mind map");
     } finally {
       setDeleting(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -104,19 +106,17 @@ export default function MindMapViewerClient({
           </div>
           <div className="flex gap-2">
             {mindMap.flashcardSetId && (
-              <Link href="/dashboard">
-                <Button variant="secondary" size="sm">
-                  Linked Deck
-                </Button>
-              </Link>
+              <Button asChild variant="secondary" size="sm">
+                <Link href="/dashboard">Linked Deck</Link>
+              </Button>
             )}
             <Button
               variant="danger"
               size="sm"
-              onClick={handleDelete}
+              onClick={() => setShowDeleteModal(true)}
               disabled={deleting}
             >
-              {deleting ? "Deleting..." : "Delete"}
+              Delete
             </Button>
           </div>
         </div>
@@ -155,6 +155,17 @@ export default function MindMapViewerClient({
           Click any node to select it. Drag nodes to rearrange the view.
         </p>
       </div>
+
+      <ConfirmModal
+        open={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDelete}
+        title="Delete mind map?"
+        description="This will permanently delete this mind map. This action cannot be undone."
+        confirmLabel="Delete"
+        loading={deleting}
+      />
+
       <toast.ToastContainer />
       {generatingCards && (
         <PageLoading

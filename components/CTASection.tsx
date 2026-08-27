@@ -22,17 +22,20 @@ export default function CTASection() {
             Your Learning?
           </h2>
           <p className="text-muted text-base md:text-lg lg:text-xl mb-6 md:mb-8 max-w-2xl mx-auto">
-            Join thousands of students and professionals using AI-powered flashcards to learn faster and remember more.
+            Create AI flashcards, study with spaced repetition, and visualize topics with mind maps — all in one place.
           </p>
           <div className="flex flex-wrap gap-3 md:gap-4 justify-center mb-4 md:mb-6">
-            <Link href={isSignedIn ? '/pages/flashcards' : '/sign-in'}>
-              <Button size="lg">
-                {isSignedIn ? 'Get Started Free' : 'Sign In to Get Started'}
-              </Button>
-            </Link>
-            <Link href="/pricing">
-              <Button variant="secondary" size="lg">View Pricing</Button>
-            </Link>
+            <Button asChild size="lg">
+              <Link href={isSignedIn ? "/pages/flashcards" : "/sign-up"}>
+                {isSignedIn ? "Get Started Free" : "Sign Up Free"}
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </Link>
+            </Button>
+            <Button asChild variant="secondary" size="lg">
+              <Link href="/pricing">View Pricing</Link>
+            </Button>
           </div>
           <p className="text-muted text-sm">
             No credit card required • Free forever plan available

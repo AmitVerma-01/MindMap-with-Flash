@@ -23,11 +23,12 @@ export function useToast() {
 
   const ToastContainer = useCallback(() => (
     <>
-      {toasts.map(toast => (
+      {toasts.map((toast, index) => (
         <Toast
           key={toast.id}
           message={toast.message}
           type={toast.type}
+          stackIndex={index}
           onClose={() => removeToast(toast.id)}
         />
       ))}

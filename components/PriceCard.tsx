@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 
@@ -13,6 +14,7 @@ interface PriceCardProps {
   disabled?: boolean;
   selectable?: boolean;
   ctaLabel?: string;
+  href?: string;
 }
 
 export default function PriceCard({
@@ -27,6 +29,7 @@ export default function PriceCard({
   disabled = false,
   selectable = true,
   ctaLabel,
+  href,
 }: PriceCardProps) {
   const isPro = price > 0;
   const defaultCta = isPro ? "Upgrade to Pro" : "Select Free Plan";
@@ -80,6 +83,10 @@ export default function PriceCard({
         ) : activated ? (
           <Button variant="secondary" fullWidth disabled>
             Current Plan
+          </Button>
+        ) : href ? (
+          <Button asChild fullWidth>
+            <Link href={href}>{ctaLabel ?? defaultCta}</Link>
           </Button>
         ) : (
           <Button fullWidth onClick={onSelect} disabled={loading}>

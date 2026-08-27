@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { getActivePlans } from "@/lib/plans-db";
 import PricingClient from "./PricingClient";
+import { PageLoading } from "@/components/LoadingLottie";
 
 export const metadata: Metadata = {
   title: "Pricing - Choose Your Plan",
@@ -18,5 +20,9 @@ export default async function PricingPage() {
     selectable: p.selectable,
   }));
 
-  return <PricingClient initialPlans={serializedPlans} />;
+  return (
+    <Suspense fallback={<PageLoading message="Loading plans..." />}>
+      <PricingClient initialPlans={serializedPlans} />
+    </Suspense>
+  );
 }

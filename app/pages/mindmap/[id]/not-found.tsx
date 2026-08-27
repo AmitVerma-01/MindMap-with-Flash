@@ -9,9 +9,9 @@ export default function MindMapNotFound() {
       <PageBackground />
       <Card className="relative z-10 text-center p-8">
         <p className="text-muted mb-4">Mind map not found</p>
-        <Link href="/pages/mindmap">
-          <Button>Create New Mind Map</Button>
-        </Link>
+        <Button asChild>
+          <Link href="/pages/mindmap">Create New Mind Map</Link>
+        </Button>
       </Card>
     </div>
   );

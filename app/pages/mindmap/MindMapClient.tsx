@@ -169,9 +169,9 @@ export default function MindMapClient({ initialSets }: MindMapClientProps) {
                   <p className="text-muted text-sm mb-4">
                     No flashcard sets found. Create one first.
                   </p>
-                  <Link href="/pages/flashcards">
-                    <Button variant="secondary">Create Flashcards</Button>
-                  </Link>
+                  <Button asChild variant="secondary">
+                    <Link href="/pages/flashcards">Create Flashcards</Link>
+                  </Button>
                 </div>
               ) : (
                 <>

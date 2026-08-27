@@ -45,17 +45,17 @@ export default function HeroSection() {
             </div>
           </div>
           <div className="flex flex-wrap gap-3 md:gap-4 pt-2">
-            <Link href={isSignedIn ? '/pages/flashcards' : '/sign-in'}>
-              <Button size="lg">
-                {isSignedIn ? 'Start Creating' : 'Sign In to Start'}
+            <Button asChild size="lg">
+              <Link href={isSignedIn ? "/pages/flashcards" : "/sign-up"}>
+                {isSignedIn ? "Start Creating" : "Sign Up Free"}
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
-              </Button>
-            </Link>
-            <Link href="/about">
-              <Button variant="secondary" size="lg">Learn More</Button>
-            </Link>
+              </Link>
+            </Button>
+            <Button asChild variant="secondary" size="lg">
+              <Link href="/about">Learn More</Link>
+            </Button>
           </div>
         </div>
         <div className="md:w-1/2 flex justify-center items-center mt-4 md:mt-0">

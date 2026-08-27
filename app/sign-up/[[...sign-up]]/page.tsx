@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import { SignUp } from "@clerk/nextjs";
 import PageBackground from "@/components/layout/PageBackground";
 import { clerkAppearance } from "@/lib/clerk-appearance";
+
+export const metadata: Metadata = {
+  title: "Sign Up",
+  description: "Create a free MindMapWithFlash account and start generating AI flashcards.",
+};
 
 export default function SignUpPage() {
   return (
@@ -8,8 +14,8 @@ export default function SignUpPage() {
       <PageBackground />
       <div className="relative z-10 w-full max-w-md">
         <SignUp
-          fallbackRedirectUrl="/pages/flashcards"
-          signInFallbackRedirectUrl="/pages/flashcards"
+          fallbackRedirectUrl="/pricing"
+          signInFallbackRedirectUrl="/pricing"
           appearance={clerkAppearance}
         />
       </div>

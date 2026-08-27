@@ -1,8 +1,8 @@
 'use client'
 
 import { useUser } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 import PageBackground from "@/components/layout/PageBackground";
 import PageHeader from "@/components/layout/PageHeader";
 import Card from "@/components/ui/Card";
@@ -24,22 +24,36 @@ interface PricingClientProps {
   initialPlans: PlanFromApi[];
 }
 
+function parsePlanParam(value: string | null): PlanSlug | null {
+  if (value === "free" || value === "pro") return value;
+  return null;
+}
+
 export default function PricingClient({ initialPlans }: PricingClientProps) {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const toast = useToast();
   const [loading, setLoading] = useState<string | null>(null);
+  const autoActivatedRef = useRef(false);
   const plans = initialPlans;
 
-  const handleSelectPlan = async (plan: PlanSlug) => {
-    if (!user) {
-      router.push("/sign-in");
-      return;
-    }
+  const planFromUrl = useMemo(
+    () => parsePlanParam(searchParams.get("plan")),
+    [searchParams]
+  );
 
+  const handleSelectPlan = async (plan: PlanSlug) => {
     const planDef = plans.find((p) => p.slug === plan);
     if (planDef && !planDef.selectable) {
       toast.warning("Pro plan is coming soon! Stay tuned.");
+      return;
+    }
+
+    if (!user) {
+      toast.info("Create a free account to activate your plan, then you'll return here.");
+      const returnUrl = encodeURIComponent(`/pricing?plan=${plan}`);
+      router.push(`/sign-up?redirect_url=${returnUrl}`);
       return;
     }
 
@@ -61,6 +75,35 @@ export default function PricingClient({ initialPlans }: PricingClientProps) {
     }
   };
 
+  useEffect(() => {
+    if (!isLoaded || !user || !planFromUrl || autoActivatedRef.current) return;
+
+    const planDef = plans.find((p) => p.slug === planFromUrl);
+    if (!planDef?.selectable) return;
+
+    autoActivatedRef.current = true;
+
+    void (async () => {
+      setLoading(planFromUrl);
+      try {
+        const result = await selectPlan(planFromUrl);
+        if (result.success) {
+          toast.success(result.data.message || "Plan activated successfully!");
+          router.push("/pages/flashcards");
+        } else {
+          toast.error(result.error);
+          autoActivatedRef.current = false;
+        }
+      } catch (error) {
+        console.error("Error selecting plan:", error);
+        toast.error("Failed to select plan. Please try again.");
+        autoActivatedRef.current = false;
+      } finally {
+        setLoading(null);
+      }
+    })();
+  }, [isLoaded, user, planFromUrl, plans, router, toast]);
+
   return (
     <div className="relative min-h-screen overflow-hidden">
       <PageBackground />
@@ -73,6 +116,15 @@ export default function PricingClient({ initialPlans }: PricingClientProps) {
           subtitle="Start free and upgrade anytime. All plans include AI-powered flashcard generation."
         />
 
+        {!user && isLoaded && (
+          <Card className="max-w-2xl mx-auto mb-8 p-4 text-center">
+            <p className="text-foreground font-medium text-sm md:text-base">
+              Select a plan below, then create your free account to get started.
+              You&apos;ll return here to activate your plan automatically.
+            </p>
+          </Card>
+        )}
+
         {plans.length === 0 ? (
           <Card className="max-w-md mx-auto text-center py-12 mb-16">
             <p className="text-muted">No plans available.</p>
@@ -84,7 +136,7 @@ export default function PricingClient({ initialPlans }: PricingClientProps) {
                 key={plan.slug}
                 hover={plan.selectable}
                 className={`flex flex-col ${
-                  !plan.selectable ? "border-2 border-primary/30 opacity-60 relative" : ""
+                  !plan.selectable ? "border-2 border-primary/30 relative" : ""
                 }`}
               >
                 {!plan.selectable && (
@@ -116,21 +168,21 @@ export default function PricingClient({ initialPlans }: PricingClientProps) {
           </h2>
           <div className="space-y-3">
             <Card>
-              <h3 className="text-base font-bold text-foreground mb-1.5">Can I cancel anytime?</h3>
+              <h3 className="text-base font-bold text-foreground mb-1.5">Do I need a credit card to start?</h3>
               <p className="text-muted text-sm">
-                Yes! You can cancel your subscription at any time. Your access will continue until the end of your billing period.
+                No. The Starter plan is completely free. Select it, create an account, and start generating flashcards right away.
               </p>
             </Card>
             <Card>
-              <h3 className="text-base font-bold text-foreground mb-1.5">What payment methods do you accept?</h3>
+              <h3 className="text-base font-bold text-foreground mb-1.5">When will Professional be available?</h3>
               <p className="text-muted text-sm">
-                We accept all major credit cards, PayPal, and other popular payment methods through our secure payment processor.
+                Professional is coming soon with more credits and advanced features. The free Starter plan includes everything you need to try the platform today.
               </p>
             </Card>
             <Card>
-              <h3 className="text-base font-bold text-foreground mb-1.5">Is there a free trial for Pro?</h3>
+              <h3 className="text-base font-bold text-foreground mb-1.5">What happens after I sign up?</h3>
               <p className="text-muted text-sm">
-                The free plan lets you try our core features. Upgrade to Pro anytime to unlock unlimited access and advanced features.
+                After creating your account, you&apos;ll activate your chosen plan and be taken to the flashcard generator to create your first set.
               </p>
             </Card>
           </div>

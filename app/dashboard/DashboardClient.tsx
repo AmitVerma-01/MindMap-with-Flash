@@ -447,12 +447,12 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
-          <Link href="/pages/flashcards">
-            <Button size="lg">+ Create Flashcard Set</Button>
-          </Link>
-          <Link href="/pages/mindmap">
-            <Button size="lg" variant="secondary">+ Create Mind Map</Button>
-          </Link>
+          <Button asChild size="lg">
+            <Link href="/pages/flashcards">+ Create Flashcard Set</Link>
+          </Button>
+          <Button asChild size="lg" variant="secondary">
+            <Link href="/pages/mindmap">+ Create Mind Map</Link>
+          </Button>
           {(flashcardSets.length > 0 || mindMapSets.length > 0) && dashboardTab === "sets" && (
             <div className="flex-1 max-w-md">
               <Input
@@ -466,8 +466,12 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
           )}
         </div>
 
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-6" role="tablist" aria-label="Dashboard sections">
           <Button
+            role="tab"
+            id="tab-sets"
+            aria-selected={dashboardTab === "sets"}
+            aria-controls="panel-sets"
             variant={dashboardTab === "sets" ? "primary" : "ghost"}
             size="sm"
             onClick={() => setDashboardTab("sets")}
@@ -475,6 +479,10 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
             Flashcard Sets
           </Button>
           <Button
+            role="tab"
+            id="tab-mindmaps"
+            aria-selected={dashboardTab === "mindmaps"}
+            aria-controls="panel-mindmaps"
             variant={dashboardTab === "mindmaps" ? "primary" : "ghost"}
             size="sm"
             onClick={() => setDashboardTab("mindmaps")}
@@ -483,15 +491,20 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
           </Button>
         </div>
 
+        <div
+          role="tabpanel"
+          id={dashboardTab === "sets" ? "panel-sets" : "panel-mindmaps"}
+          aria-labelledby={dashboardTab === "sets" ? "tab-sets" : "tab-mindmaps"}
+        >
         {dashboardTab === "mindmaps" ? (
           mindMapSets.length === 0 ? (
             <Card className="text-center py-12">
               <p className="text-5xl mb-4">🗺️</p>
               <h2 className="text-xl font-bold text-foreground mb-3">No mind maps yet</h2>
               <p className="text-muted mb-6">Generate a mind map from any topic or existing deck.</p>
-              <Link href="/pages/mindmap">
-                <Button>Create Mind Map</Button>
-              </Link>
+              <Button asChild>
+                <Link href="/pages/mindmap">Create Mind Map</Link>
+              </Button>
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
@@ -503,9 +516,9 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
                     <span>{map.nodeCount} nodes</span>
                     <span>{new Date(map.createdAt).toLocaleDateString()}</span>
                   </div>
-                  <Link href={`/pages/mindmap/${map.id}`}>
-                    <Button fullWidth>View Mind Map</Button>
-                  </Link>
+                  <Button asChild fullWidth>
+                    <Link href={`/pages/mindmap/${map.id}`}>View Mind Map</Link>
+                  </Button>
                 </Card>
               ))}
             </div>
@@ -516,9 +529,9 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
               <p className="text-5xl mb-4">📚</p>
               <h2 className="text-xl md:text-2xl font-bold text-foreground mb-3">No flashcard sets yet</h2>
               <p className="text-muted mb-6">Create your first set to start learning!</p>
-              <Link href="/pages/flashcards">
-                <Button>Create Flashcard Set</Button>
-              </Link>
+              <Button asChild>
+                <Link href="/pages/flashcards">Create Flashcard Set</Link>
+              </Button>
             </Card>
           </div>
         ) : filteredSets.length === 0 ? (
@@ -606,6 +619,7 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
             })}
           </div>
         )}
+        </div>
       </div>
 
       <ConfirmModal

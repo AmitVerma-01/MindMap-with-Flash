@@ -54,7 +54,10 @@ function MindMapCanvasInner({
   onSaveError,
 }: MindMapCanvasProps) {
   const treeRef = useRef(tree);
-  treeRef.current = tree;
+
+  useEffect(() => {
+    treeRef.current = tree;
+  }, [tree]);
 
   const { nodes: initialNodes, edges: initialEdges } = useMemo(
     () => treeToFlowElements(tree),

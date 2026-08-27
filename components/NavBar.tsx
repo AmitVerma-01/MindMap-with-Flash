@@ -7,6 +7,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { cn } from "@/lib/cn";
+import Button from "@/components/ui/Button";
 
 export default function NavBar() {
     const pathname = usePathname();
@@ -21,7 +22,7 @@ export default function NavBar() {
         );
 
     return (
-        <nav className="h-14 w-full text-foreground font-medium glass-card border-b border-border flex items-center justify-between px-4 md:px-6 sticky top-0 z-50 shadow-lg">
+        <nav aria-label="Main navigation" className="h-14 w-full text-foreground font-medium glass-card border-b border-border flex items-center justify-between px-4 md:px-6 sticky top-0 z-50 shadow-lg">
             <Link href="/" className="flex items-center font-mono hover:opacity-80 transition-opacity focus-ring rounded">
                 <Image src={logo} alt="MindMapWithFlash" width={40} height={40} className="mr-2" />
                 <div className="flex flex-col leading-tight">
@@ -33,6 +34,7 @@ export default function NavBar() {
             <div className="hidden md:flex items-center gap-5">
                 <div className="flex gap-x-5 text-sm">
                     <Link href="/" className={navLinkClass('/')}>Home</Link>
+                    <Link href="/about" className={navLinkClass('/about')}>About</Link>
                     <SignedIn>
                         <Link href="/pages/flashcards" className={navLinkClass('/pages/flashcards')}>Generate</Link>
                         <Link href="/pages/mindmap" className={navLinkClass('/pages/mindmap')}>Mind Map</Link>
@@ -43,17 +45,17 @@ export default function NavBar() {
 
                 <div className="flex gap-x-2 items-center">
                     <SignedOut>
-                        <SignInButton fallbackRedirectUrl="/pages/flashcards">
-                            <div className="glass-button px-3 py-1.5 rounded-lg text-xs">
+                        <SignInButton fallbackRedirectUrl="/pricing">
+                            <Button variant="secondary" size="sm" type="button">
                                 Sign in
-                            </div>
+                            </Button>
                         </SignInButton>
                     </SignedOut>
                     <SignedOut>
-                        <SignUpButton fallbackRedirectUrl="/pages/flashcards">
-                            <div className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-primary-gradient">
+                        <SignUpButton fallbackRedirectUrl="/pricing">
+                            <Button size="sm" type="button">
                                 Sign up
-                            </div>
+                            </Button>
                         </SignUpButton>
                     </SignedOut>
                     <SignedIn>
@@ -67,6 +69,7 @@ export default function NavBar() {
                     <UserButton />
                 </SignedIn>
                 <button
+                    type="button"
                     onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                     className="glass-button p-2 rounded-lg focus-ring"
                     aria-label="Toggle menu"
@@ -89,6 +92,7 @@ export default function NavBar() {
                 <div id="mobile-menu" className="absolute top-14 left-0 right-0 glass-card border-b border-border shadow-xl md:hidden">
                     <div className="flex flex-col p-4 space-y-3">
                         <Link href="/" onClick={() => setMobileMenuOpen(false)} className={cn(navLinkClass('/'), "py-2 text-sm")}>Home</Link>
+                        <Link href="/about" onClick={() => setMobileMenuOpen(false)} className={cn(navLinkClass('/about'), "py-2 text-sm")}>About</Link>
                         <SignedIn>
                             <Link href="/pages/flashcards" onClick={() => setMobileMenuOpen(false)} className={cn(navLinkClass('/pages/flashcards'), "py-2 text-sm")}>Generate</Link>
                             <Link href="/pages/mindmap" onClick={() => setMobileMenuOpen(false)} className={cn(navLinkClass('/pages/mindmap'), "py-2 text-sm")}>Mind Map</Link>
@@ -97,15 +101,15 @@ export default function NavBar() {
                         <Link href="/pricing" onClick={() => setMobileMenuOpen(false)} className={cn(navLinkClass('/pricing'), "py-2 text-sm")}>Pricing</Link>
                         <SignedOut>
                             <div className="pt-3 border-t border-border space-y-2">
-                                <SignInButton fallbackRedirectUrl="/pages/flashcards">
-                                    <div className="glass-button px-4 py-2 rounded-lg text-center text-sm w-full">
+                                <SignInButton fallbackRedirectUrl="/pricing">
+                                    <Button variant="secondary" fullWidth type="button">
                                         Sign in
-                                    </div>
+                                    </Button>
                                 </SignInButton>
-                                <SignUpButton fallbackRedirectUrl="/pages/flashcards">
-                                    <div className="px-4 py-2 rounded-lg text-center text-sm font-semibold bg-primary-gradient w-full">
+                                <SignUpButton fallbackRedirectUrl="/pricing">
+                                    <Button fullWidth type="button">
                                         Sign up
-                                    </div>
+                                    </Button>
                                 </SignUpButton>
                             </div>
                         </SignedOut>

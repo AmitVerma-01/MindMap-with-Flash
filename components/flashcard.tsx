@@ -28,7 +28,7 @@ export default function Flashcard({
 
   return (
     <div className="relative group">
-      <div className="absolute -top-2 -right-2 z-20 flex gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+      <div className="absolute -top-2 -right-2 z-20 flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
         {onRegenerate && (
           <button
             type="button"

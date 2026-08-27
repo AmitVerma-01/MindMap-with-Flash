@@ -36,34 +36,39 @@ export const metadata: Metadata = {
 export default function Home() {
 
   return (
-   <main className="relative overflow-hidden">
+   <div className="relative overflow-hidden">
       <PageBackground />
       
       <div className="relative z-10">
       {/* Hero Section */}
       <HeroSection />
 
-      {/* Stats Section */}
-      <section className="w-full py-16 flex justify-center items-center" aria-label="Platform Statistics">
+      {/* Capabilities Section */}
+      <section className="w-full py-16 flex justify-center items-center" aria-labelledby="capabilities-heading">
         <div className="w-11/12 max-w-6xl">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8" role="list">
-            <div className="glass-card p-6 rounded-2xl text-center">
-              <div className="text-4xl md:text-5xl font-bold text-primary mb-2">10K+</div>
-              <div className="text-muted text-sm md:text-base">Flashcards Created</div>
-            </div>
-            <div className="glass-card p-6 rounded-2xl text-center">
-              <div className="text-4xl md:text-5xl font-bold text-primary mb-2">5K+</div>
-              <div className="text-muted text-sm md:text-base">Active Learners</div>
-            </div>
-            <div className="glass-card p-6 rounded-2xl text-center">
-              <div className="text-4xl md:text-5xl font-bold text-primary mb-2">95%</div>
-              <div className="text-muted text-sm md:text-base">Success Rate</div>
-            </div>
-            <div className="glass-card p-6 rounded-2xl text-center">
-              <div className="text-4xl md:text-5xl font-bold text-primary mb-2">4.9★</div>
-              <div className="text-muted text-sm md:text-base">User Rating</div>
-            </div>
-          </div>
+          <h2 id="capabilities-heading" className="sr-only">What you can do</h2>
+          <ul className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <li className="glass-card p-6 rounded-2xl text-center list-none">
+              <div className="text-3xl mb-2" aria-hidden="true">✨</div>
+              <div className="text-foreground font-semibold text-sm md:text-base mb-1">AI Generation</div>
+              <div className="text-muted text-xs md:text-sm">Flashcards from any topic</div>
+            </li>
+            <li className="glass-card p-6 rounded-2xl text-center list-none">
+              <div className="text-3xl mb-2" aria-hidden="true">🔄</div>
+              <div className="text-foreground font-semibold text-sm md:text-base mb-1">Spaced Repetition</div>
+              <div className="text-muted text-xs md:text-sm">SRS study on your dashboard</div>
+            </li>
+            <li className="glass-card p-6 rounded-2xl text-center list-none">
+              <div className="text-3xl mb-2" aria-hidden="true">🗺️</div>
+              <div className="text-foreground font-semibold text-sm md:text-base mb-1">Mind Maps</div>
+              <div className="text-muted text-xs md:text-sm">Visualize topic connections</div>
+            </li>
+            <li className="glass-card p-6 rounded-2xl text-center list-none">
+              <div className="text-3xl mb-2" aria-hidden="true">📤</div>
+              <div className="text-foreground font-semibold text-sm md:text-base mb-1">Export</div>
+              <div className="text-muted text-xs md:text-sm">Download CSV &amp; JSON</div>
+            </li>
+          </ul>
         </div>
       </section>
 
@@ -163,7 +168,8 @@ export default function Home() {
                 description="Perfect for trying out"
                 price={0}
                 monthlyCredits={50}
-                activated
+                ctaLabel="Get Started Free"
+                href="/sign-up"
               />
             </div>
             
@@ -200,92 +206,10 @@ export default function Home() {
           </div>
         </div>
       </section>
-      {/* Testimonials Section */}
-      <section className="w-full py-20 flex justify-center items-center" aria-labelledby="testimonials-heading">
-        <div className="w-11/12 max-w-6xl">
-          <div className="text-center mb-16">
-            <div className="inline-block glass-card px-6 py-2 rounded-full mb-6">
-              <span className="text-sm font-bold text-primary tracking-wider">💬 TESTIMONIALS</span>
-            </div>
-            <h2 id="testimonials-heading" className="text-4xl md:text-5xl font-bold text-foreground mb-6 drop-shadow-lg">
-              Loved by <span className="text-transparent bg-clip-text bg-primary-gradient">Students</span> Worldwide
-            </h2>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="glass-card glass-card-hover p-6 rounded-2xl">
-              <div className="flex items-center gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <svg key={i} className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                ))}
-              </div>
-              <p className="text-muted mb-4">
-                &quot;This app completely changed how I study. I went from struggling to acing my exams!&quot;
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-primary-gradient rounded-full flex items-center justify-center">
-                  <span className="text-foreground font-bold">SM</span>
-                </div>
-                <div>
-                  <div className="text-foreground font-semibold">Sarah M.</div>
-                  <div className="text-muted text-sm">Medical Student</div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="glass-card glass-card-hover p-6 rounded-2xl">
-              <div className="flex items-center gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <svg key={i} className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                ))}
-              </div>
-              <p className="text-muted mb-4">
-                &quot;The AI-generated flashcards are incredibly accurate. Saves me hours of manual work!&quot;
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-primary-gradient rounded-full flex items-center justify-center">
-                  <span className="text-foreground font-bold">JD</span>
-                </div>
-                <div>
-                  <div className="text-foreground font-semibold">James D.</div>
-                  <div className="text-muted text-sm">Software Engineer</div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="glass-card glass-card-hover p-6 rounded-2xl">
-              <div className="flex items-center gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <svg key={i} className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                ))}
-              </div>
-              <p className="text-muted mb-4">
-                &quot;Best study tool I&apos;ve ever used. My grades improved significantly in just one semester!&quot;
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-primary-gradient rounded-full flex items-center justify-center">
-                  <span className="text-foreground font-bold">EL</span>
-                </div>
-                <div>
-                  <div className="text-foreground font-semibold">Emily L.</div>
-                  <div className="text-muted text-sm">Law Student</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* CTA Section */}
       <CTASection />
       </div>
-   </main>
+   </div>
   );
 }
 

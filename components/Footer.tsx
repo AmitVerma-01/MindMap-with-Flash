@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Footer() {
   return (
     <footer className="px-6 py-6 glass-card border-t border-border text-muted text-sm">
@@ -6,13 +8,16 @@ export default function Footer() {
           © {new Date().getFullYear()} MindMapWithFlash. All rights reserved.
         </p>
         <nav className="flex gap-6" aria-label="Footer navigation">
-          <a href="#" className="hover:text-primary transition-colors text-xs md:text-sm focus-ring rounded">
-            Terms of Service
-          </a>
-          <a href="#" className="hover:text-primary transition-colors text-xs md:text-sm focus-ring rounded">
-            Privacy Policy
-          </a>
-          <a href="#" className="hover:text-primary transition-colors text-xs md:text-sm focus-ring rounded">
+          <Link href="/about" className="hover:text-primary transition-colors text-xs md:text-sm focus-ring rounded">
+            About
+          </Link>
+          <Link href="/pricing" className="hover:text-primary transition-colors text-xs md:text-sm focus-ring rounded">
+            Pricing
+          </Link>
+          <a
+            href="mailto:support@mindmapwithflash.com"
+            className="hover:text-primary transition-colors text-xs md:text-sm focus-ring rounded"
+          >
             Contact
           </a>
         </nav>

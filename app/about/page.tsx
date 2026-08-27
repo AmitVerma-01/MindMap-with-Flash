@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import PageBackground from "@/components/layout/PageBackground";
 import PageHeader from "@/components/layout/PageHeader";
 import Card from "@/components/ui/Card";
+
+export const metadata: Metadata = {
+  title: "About",
+  description: "Learn about MindMapWithFlash — AI-powered flashcards, spaced repetition, and mind maps for students and professionals.",
+};
 
 export default function About() {
   return (
